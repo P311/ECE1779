@@ -1,10 +1,13 @@
-import React from "react";
-import Link from "next/link";
+import EventTable from "./components/eventTable";
+import events from "@/testing_data/events.json";
 
 export default function Home() {
   return (
-    <main style={{ maxWidth: 800, margin: "0 auto", padding: "2rem" }}>
-      <h1>ECE1779 Project</h1>
+    <main className="page-container">
+      <h1>Events</h1>
+      <div style={{ marginTop: "1.5rem" }}>
+        <EventTable events={events} />
+      </div>
     </main>
   );
 }

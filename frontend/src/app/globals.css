@@ -126,3 +126,20 @@
     @apply font-sans;
     }
 }
+
+body {
+  @apply min-h-screen;
+}
+
+.page-container {
+  @apply max-w-7xl mx-auto px-20 py-14;
+}
+
+h1 {
+  @apply text-3xl font-bold;
+}
+
+.flex-row {
+  display: flex;
+  gap: 1rem;
+}
