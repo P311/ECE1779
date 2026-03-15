@@ -1,0 +1,10 @@
+# Next.js
+.next/
+out/
+
+# Dependencies
+frontend/node_modules/
+.env*
+
+# OS
+.DS_Store
