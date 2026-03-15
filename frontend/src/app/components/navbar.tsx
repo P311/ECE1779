@@ -12,6 +12,7 @@ import {
 
 const NAV_ITEMS = [
   { href: "/", label: "Events" },
+  { href: "/source", label: "Sources" },
 ];
 
 export default function Navbar() {

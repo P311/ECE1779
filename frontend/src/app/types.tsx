@@ -8,6 +8,18 @@ export interface Event {
   ingested_at: string;
 }
 
+export interface Source {
+  id: string;
+  name: string;
+  description: string;
+  created_at: string;
+  stats: {
+    total_events: number;
+    last_event_at: string;
+    critical_count_24h: number;
+  };
+}
+
 export const SEVERITY_COLOR: Record<string, string> = {
   info: "#2196f3",
   warning: "#ff9800",
