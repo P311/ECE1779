@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Event, SEVERITY_COLOR, PAGE_SIZE} from "../types";
+import { useState } from "react";
+import { Event, SEVERITY_COLOR} from "../types";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -79,7 +78,7 @@ export default function EventTable({ events }: { events: Event[] }) {
           </TableHeader>
           <TableBody>
             {events.map((event) => (
-              <TableRow key={event.id} class="hover:bg-gray-100 hover:cursor-pointer">
+              <TableRow key={event.id} className="hover:bg-gray-100 hover:cursor-pointer">
                 {Object.entries(event).map(([key, value]) => (
                   <TableCell key={key} style={{ color: key==="severity" ? SEVERITY_COLOR[event.severity] : undefined }}>
                     {processValue(value)}

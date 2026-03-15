@@ -13,5 +13,3 @@ export const SEVERITY_COLOR: Record<string, string> = {
   warning: "#ff9800",
   critical: "#f44336",
 };
-
-export const PAGE_SIZE = 15;
