@@ -1,0 +1,162 @@
+[
+  {
+    "id": "evt-0001-0000-0000-000000000001",
+    "source_id": "11111111-1111-1111-1111-111111111111",
+    "event_type": "user.login",
+    "severity": "info",
+    "payload": { "user_id": "u001", "ip": "192.168.1.10", "browser": "Chrome" },
+    "ingested_at": "2026-03-09T10:00:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000002",
+    "source_id": "22222222-2222-2222-2222-222222222222",
+    "event_type": "crash.report",
+    "severity": "critical",
+    "payload": { "device": "iPhone 14", "os": "17.1", "screen": "HomeScreen", "stack": "NullPointerException at line 42" },
+    "ingested_at": "2026-03-09T10:05:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000003",
+    "source_id": "33333333-3333-3333-3333-333333333333",
+    "event_type": "payment.failed",
+    "severity": "critical",
+    "payload": { "amount": 99.99, "currency": "USD", "reason": "insufficient_funds", "card_last4": "4242" },
+    "ingested_at": "2026-03-09T10:08:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000004",
+    "source_id": "11111111-1111-1111-1111-111111111111",
+    "event_type": "api.slow_query",
+    "severity": "warning",
+    "payload": { "endpoint": "/api/reports", "duration_ms": 3200, "query_count": 42 },
+    "ingested_at": "2026-03-09T10:10:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000005",
+    "source_id": "33333333-3333-3333-3333-333333333333",
+    "event_type": "payment.success",
+    "severity": "info",
+    "payload": { "amount": 49.00, "currency": "USD", "txn_id": "txn_abc123" },
+    "ingested_at": "2026-03-09T10:12:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000006",
+    "source_id": "44444444-4444-4444-4444-444444444444",
+    "event_type": "pipeline.failed",
+    "severity": "critical",
+    "payload": { "job": "daily-etl", "error": "connection timeout", "attempts": 3 },
+    "ingested_at": "2026-03-09T10:15:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000007",
+    "source_id": "44444444-4444-4444-4444-444444444444",
+    "event_type": "pipeline.completed",
+    "severity": "info",
+    "payload": { "job": "hourly-sync", "rows_processed": 15000, "duration_s": 42 },
+    "ingested_at": "2026-03-09T10:20:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000008",
+    "source_id": "11111111-1111-1111-1111-111111111111",
+    "event_type": "disk.high_usage",
+    "severity": "warning",
+    "payload": { "host": "web-01", "used_pct": 82, "free_gb": 18 },
+    "ingested_at": "2026-03-09T10:22:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000009",
+    "source_id": "22222222-2222-2222-2222-222222222222",
+    "event_type": "user.signup",
+    "severity": "info",
+    "payload": { "plan": "free", "referral": "organic", "country": "CA" },
+    "ingested_at": "2026-03-09T10:25:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000010",
+    "source_id": "11111111-1111-1111-1111-111111111111",
+    "event_type": "auth.failed",
+    "severity": "warning",
+    "payload": { "user_id": "u002", "reason": "wrong_password", "attempt": 3 },
+    "ingested_at": "2026-03-09T10:30:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000011",
+    "source_id": "33333333-3333-3333-3333-333333333333",
+    "event_type": "fraud.detected",
+    "severity": "critical",
+    "payload": { "user_id": "u999", "score": 0.92, "rule": "velocity_check" },
+    "ingested_at": "2026-03-09T10:33:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000012",
+    "source_id": "44444444-4444-4444-4444-444444444444",
+    "event_type": "pipeline.started",
+    "severity": "info",
+    "payload": { "job": "weekly-report", "scheduled_at": "2026-03-09T10:00:00Z" },
+    "ingested_at": "2026-03-09T10:35:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000013",
+    "source_id": "22222222-2222-2222-2222-222222222222",
+    "event_type": "push.notification_sent",
+    "severity": "info",
+    "payload": { "user_id": "u003", "template": "welcome", "channel": "apns" },
+    "ingested_at": "2026-03-09T10:38:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000014",
+    "source_id": "11111111-1111-1111-1111-111111111111",
+    "event_type": "memory.high_usage",
+    "severity": "warning",
+    "payload": { "host": "web-02", "used_pct": 88, "process": "node" },
+    "ingested_at": "2026-03-09T10:41:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000015",
+    "source_id": "33333333-3333-3333-3333-333333333333",
+    "event_type": "refund.issued",
+    "severity": "info",
+    "payload": { "amount": 25.00, "currency": "USD", "original_txn": "txn_abc123" },
+    "ingested_at": "2026-03-09T10:44:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000016",
+    "source_id": "44444444-4444-4444-4444-444444444444",
+    "event_type": "pipeline.failed",
+    "severity": "critical",
+    "payload": { "job": "realtime-stream", "error": "out of memory", "heap_mb": 2048 },
+    "ingested_at": "2026-03-09T10:47:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000017",
+    "source_id": "11111111-1111-1111-1111-111111111111",
+    "event_type": "user.logout",
+    "severity": "info",
+    "payload": { "user_id": "u001", "session_duration_s": 3600 },
+    "ingested_at": "2026-03-09T10:50:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000018",
+    "source_id": "22222222-2222-2222-2222-222222222222",
+    "event_type": "app.foreground",
+    "severity": "info",
+    "payload": { "device": "Samsung Galaxy S23", "os": "Android 14" },
+    "ingested_at": "2026-03-09T10:53:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000019",
+    "source_id": "33333333-3333-3333-3333-333333333333",
+    "event_type": "payment.timeout",
+    "severity": "warning",
+    "payload": { "gateway": "stripe", "timeout_ms": 5000, "retry": 2 },
+    "ingested_at": "2026-03-09T10:56:00Z"
+  },
+  {
+    "id": "evt-0001-0000-0000-000000000020",
+    "source_id": "11111111-1111-1111-1111-111111111111",
+    "event_type": "deploy.completed",
+    "severity": "info",
+    "payload": { "version": "v2.4.1", "environment": "production", "duration_s": 87 },
+    "ingested_at": "2026-03-09T11:00:00Z"
+  }
+]
