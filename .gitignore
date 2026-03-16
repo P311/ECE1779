@@ -1,9 +1,9 @@
 # Next.js
 .next/
 out/
+node_modules/
 
 # Dependencies
-frontend/node_modules/
 .env*
 
 # OS
