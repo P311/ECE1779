@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import {
   Table,
@@ -27,6 +28,7 @@ import {
 export default function EventTable({ events }: { events: Event[] }) {
   const [searchField, setSearchField] = useState<string>("id");
   const [searchValue, setSearchValue] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   function search() {
     // TODO: API interaction
@@ -78,7 +80,7 @@ export default function EventTable({ events }: { events: Event[] }) {
           </TableHeader>
           <TableBody>
             {events.map((event) => (
-              <TableRow key={event.id} className="hover:bg-gray-100 hover:cursor-pointer">
+              <TableRow key={event.id} className="hover:bg-gray-100 hover:cursor-pointer" onClick={() => setSelectedEvent(event)}>
                 {Object.entries(event).map(([key, value]) => (
                   <TableCell key={key} style={{ color: key==="severity" ? SEVERITY_COLOR[event.severity] : undefined }}>
                     {processValue(value)}
@@ -101,6 +103,34 @@ export default function EventTable({ events }: { events: Event[] }) {
           Next
         </Button>
       </div>
+
+      <Dialog open={!!selectedEvent} onOpenChange={(open) => { if (!open) setSelectedEvent(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Event Details</DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-4 mt-4">
+              {Object.entries(selectedEvent).map(([key, value]) => (
+                <div key={key} className="space-y-1">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{key}</p>
+                  <div>
+                    {typeof value === "object" ? (
+                      <pre className="bg-muted rounded-md p-3 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
+                        {JSON.stringify(value, null, 2)}
+                      </pre>
+                    ) : (
+                      <span className="text-sm" style={{ color: key === "severity" ? SEVERITY_COLOR[selectedEvent.severity] : undefined }}>
+                        {String(value)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
