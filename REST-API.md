@@ -67,6 +67,8 @@ Retrieve a paginated list of events, sorted by `ingested_at` in descending order
 
 Create a new event. The `source_id` must reference an existing source in the database; otherwise the request is rejected.
 
+If alert is active, check if the number of events within time window has exceeded the threshold. If so, send an notification email.
+
 **Request Body**
 
 ```json
@@ -298,4 +300,49 @@ Return event counts grouped by severity level.
   { "severity": "warning", "count": 15 },
   { "severity": "info", "count": 42 }
 ]
+```
+
+---
+
+## Alert
+
+### `PUT /alert/config`
+
+Update the alert configuration. When active, the system sends an email notification if the number of events within the specified time window exceeds the threshold.
+
+**Request Body**
+
+```json
+{
+  "active": true,
+  "time_window_minutes": 2500,
+  "event_threshold": 10,
+  "email": "test@mail.utoronto.ca"
+}
+```
+
+| Field                 | Type    | Required | Description                                              |
+|-----------------------|---------|----------|----------------------------------------------------------|
+| `active`              | boolean | Yes      | Whether alerting is enabled                              |
+| `time_window_minutes` | integer | Yes      | Size of the sliding time window in minutes               |
+| `event_threshold`     | integer | Yes      | Number of events within the window that triggers an alert |
+| `email`     | string | Yes      | The email address to receive high volume alert |
+**Response**
+
+`200 OK`
+
+```json
+{
+  "active": true,
+  "time_window_minutes": 2500,
+  "event_threshold": 10
+}
+```
+
+`400 Bad Request` — Missing or invalid fields.
+
+```json
+{
+  "detail": "Field 'time_window_minutes' must be a positive integer."
+}
 ```
