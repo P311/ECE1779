@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import stats_source from "@/testing_data/stats_source.json";
+import stats_severity from "@/testing_data/stats_severity.json";
+import stats_timeline from "@/testing_data/stats_timeline.json";
+
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -8,15 +12,17 @@ import {
   NavigationMenuLink,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { ChartPieLabel } from "../components/chartPieLabel";
 
 const TABS = [
-  { key: "event_group", label: "Event Groups" },
+  { key: "event_timeline", label: "Event Timeline" },
   { key: "source_group", label: "Source Groups" },
-  { key: "sources", label: "Sources" },
+  { key: "severity_analysis", label: "Severity Analysis" },
 ];
 
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState(TABS[0].key);
+  console.log("stats source:", stats_source);
 
   return (
     <main className="page-container">
@@ -42,9 +48,11 @@ export default function AnalyticsPage() {
         </NavigationMenu>
       </div>
       <div className="mt-6">
-        {activeTab === "event_group" && <p>Event Groups analytics content here.</p>}
-        {activeTab === "source_group" && <p>Source Groups analytics content here.</p>}
-        {activeTab === "sources" && <p>Sources analytics content here.</p>}
+        {activeTab === "event_timeline" &&<p> test </p>}
+        {activeTab === "source_group" && 
+        <ChartPieLabel data={stats_source} nameKey="source"/>}
+        {activeTab === "severity_analysis" && 
+        <ChartPieLabel data={stats_severity} nameKey="severity"/>}
       </div>
     </main>
   );
