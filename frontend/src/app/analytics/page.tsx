@@ -13,6 +13,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { ChartPieLabel } from "../components/chartPieLabel";
+import { ChartTimeline } from "../components/chartTimeline";
 
 const TABS = [
   { key: "event_timeline", label: "Event Timeline" },
@@ -48,7 +49,7 @@ export default function AnalyticsPage() {
         </NavigationMenu>
       </div>
       <div className="mt-6">
-        {activeTab === "event_timeline" &&<p> test </p>}
+        {activeTab === "event_timeline" && <ChartTimeline data={stats_timeline} />}
         {activeTab === "source_group" && 
         <ChartPieLabel data={stats_source} nameKey="source"/>}
         {activeTab === "severity_analysis" && 

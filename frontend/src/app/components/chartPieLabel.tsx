@@ -4,13 +4,6 @@
 import { Pie, PieChart } from "recharts"
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -49,7 +42,7 @@ export function ChartPieLabel({
   return (
     <ChartContainer
       config={config}
-      className="mx-auto mt-4 max-h-[400px] pb-0 [&_.recharts-pie-label-text]:fill-foreground"
+      className="mx-auto mt-4 max-h-[300px] pb-0 [&_.recharts-pie-label-text]:fill-foreground"
     >
       <PieChart>
         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
