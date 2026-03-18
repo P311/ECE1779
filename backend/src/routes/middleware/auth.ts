@@ -8,7 +8,7 @@ function extractBearer(req: Request): string | null {
   return header.slice(7).trim();
 }
 
-export function makeSourceAuth(repo: Pick<SourcesRepository, 'getSourceByApiKey'>) {
+export function makeSourceAuth(repo: SourcesRepository) {
   return function (req: Request, res: Response, next: NextFunction): void {
     const token = extractBearer(req);
     if (!token) {

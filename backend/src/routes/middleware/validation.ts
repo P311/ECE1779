@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { z, ZodSchema } from 'zod';
-
-// --- Schemas ---
+import { z } from 'zod';
 
 export const postEventSchema = z.object({
   event_type: z.string().min(1).max(100),
@@ -35,9 +33,7 @@ export const getStatsQuerySchema = z.object({
   source_id: z.string().uuid().optional(),
 });
 
-// --- Middleware factory ---
-
-export function validateBody<T>(schema: ZodSchema<T>) {
+export function validateBody<T>(schema: z.ZodType<T>) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
@@ -54,7 +50,7 @@ export function validateBody<T>(schema: ZodSchema<T>) {
   };
 }
 
-export function validateQuery<T>(schema: ZodSchema<T>) {
+export function validateQuery<T>(schema: z.ZodType<T>) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
@@ -66,7 +62,6 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
       });
       return;
     }
-    // Attach parsed query so downstream handlers can use typed values
     (req as Request & { parsedQuery: T }).parsedQuery = result.data;
     next();
   };
