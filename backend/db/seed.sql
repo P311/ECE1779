@@ -1,12 +1,12 @@
 -- Seed data for development
 -- Run after migrations
 
--- Insert sample sources (api_key is set manually for dev predictability)
-INSERT INTO sources (id, name, description, api_key) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'web-app', 'Primary web application', 'evt_aabbccdd11223344aabbccdd11223344'),
-  ('22222222-2222-2222-2222-222222222222', 'mobile-ios', 'iOS mobile application', 'evt_55667788aabbccdd55667788aabbccdd'),
-  ('33333333-3333-3333-3333-333333333333', 'payment-service', 'Payment processing microservice', 'evt_99001122334455669900112233445566'),
-  ('44444444-4444-4444-4444-444444444444', 'data-pipeline', 'ETL data pipeline', 'evt_ffeeddccbbaa0099ffeeddccbbaa0099')
+-- Insert sample sources (deterministic API keys for testing)
+INSERT INTO sources (id, name, description, key_prefix, api_key_hash) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'web-app', 'Primary web application', 'aabbccdd', ENCODE(DIGEST('evt_aabbccdd_11223344aabbccdd11223344', 'sha256'), 'hex')),
+  ('22222222-2222-2222-2222-222222222222', 'mobile-ios', 'iOS mobile application', '55667788', ENCODE(DIGEST('evt_55667788_55667788aabbccdd55667788', 'sha256'), 'hex')),
+  ('33333333-3333-3333-3333-333333333333', 'payment-service', 'Payment processing microservice', '99001122', ENCODE(DIGEST('evt_99001122_334455669900112233445566', 'sha256'), 'hex')),
+  ('44444444-4444-4444-4444-444444444444', 'data-pipeline', 'ETL data pipeline', 'ffeeddcc', ENCODE(DIGEST('evt_ffeeddcc_bbaa0099ffeeddccbbaa0099', 'sha256'), 'hex'))
 ON CONFLICT DO NOTHING;
 
 -- Insert sample events

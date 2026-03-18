@@ -2,11 +2,27 @@ export interface Source {
   id: string;
   name: string;
   description: string | null;
-  api_key: string;
   created_at: Date;
+  last_used_at: Date | null;
+  is_active: boolean;
 }
 
-export interface SourceWithStats extends Omit<Source, 'api_key'> {
+export interface SourceRow {
+  id: string;
+  name: string;
+  description: string | null;
+  key_prefix: string;
+  api_key_hash: string;
+  created_at: Date;
+  last_used_at: Date | null;
+  is_active: boolean;
+}
+
+export interface CreatedSource extends Source {
+  api_key: string;
+}
+
+export interface SourceWithStats extends Source {
   stats: {
     total_events: number;
     last_event_at: Date | null;
@@ -18,7 +34,7 @@ export interface Event {
   id: string;
   source_id: string;
   event_type: string;
-  severity: 'info' | 'warning' | 'critical';
+  severity: "info" | "warning" | "critical";
   payload: Record<string, unknown>;
   ingested_at: Date;
 }
@@ -37,7 +53,7 @@ export interface PaginationParams {
 }
 
 export interface EventStatsParams {
-  group_by: 'hour' | 'day';
+  group_by: "hour" | "day";
   start_time: string;
   end_time: string;
   source_id?: string;
@@ -53,15 +69,15 @@ export interface StatsBucket {
 
 export interface BatchEventInput {
   event_type: string;
-  severity: 'info' | 'warning' | 'critical';
+  severity: "info" | "warning" | "critical";
   payload?: Record<string, unknown>;
 }
 
 export type EventsRepository = {
-  insertEvent(  
+  insertEvent(
     sourceId: string,
     eventType: string,
-    severity: 'info' | 'warning' | 'critical',
+    severity: "info" | "warning" | "critical",
     payload: Record<string, unknown>,
   ): Promise<Event>;
   insertEventsBatch(
@@ -72,15 +88,15 @@ export type EventsRepository = {
     filters: EventFilters,
     pagination: PaginationParams,
   ): Promise<{ data: Event[]; total: number }>;
-  getEventStats(params: EventStatsParams): Promise<StatsBucket[]>
+  getEventStats(params: EventStatsParams): Promise<StatsBucket[]>;
 };
 
 export type SourcesRepository = {
   createSource(
     name: string,
     description?: string | null,
-  ): Promise<Source>;
-  getSourceByApiKey(key: string): Promise<Source | null>;
+  ): Promise<CreatedSource>;
+  getSourceByApiKey(key: string): Promise<SourceRow | null>;
   getSources(): Promise<SourceWithStats[]>;
   getSourceById(id: string): Promise<Source | null>;
-}
+};
