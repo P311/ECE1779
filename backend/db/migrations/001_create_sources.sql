@@ -6,7 +6,7 @@ CREATE TABLE sources (
     name          VARCHAR(255) UNIQUE NOT NULL,
     description   TEXT,
     key_prefix    VARCHAR(16) UNIQUE NOT NULL,
-    api_key_hash  TEXT UNIQUE NOT NULL,
+    api_key_hash  TEXT NOT NULL,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_used_at  TIMESTAMPTZ,
     is_active     BOOLEAN NOT NULL DEFAULT TRUE
