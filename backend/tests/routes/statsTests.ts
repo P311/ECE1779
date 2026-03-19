@@ -1,26 +1,27 @@
 // statsTests.ts
 import * as express from 'express';
 import * as request from 'supertest';
-import statsRouter from '../../src/routes/stats';
+import { makeStatsRouter } from '../../src/routes/stats';
+import type { EventsRepository, SourcesRepository } from '../../src/repositories/types';
 
-// Mock repository modules so no DB connection is needed
-jest.mock('../../src/repositories/events', () => ({
+const mockEventsRepo: jest.Mocked<EventsRepository> = {
+  insertEvent: jest.fn(),
+  insertEventsBatch: jest.fn(),
+  queryEvents: jest.fn(),
   getEventStats: jest.fn(),
-}));
-jest.mock('../../src/repositories/sources', () => ({
+};
+
+const mockSourcesRepo: jest.Mocked<SourcesRepository> = {
+  createSource: jest.fn(),
+  getSourceByApiKey: jest.fn(),
   getSources: jest.fn(),
-}));
-
-import { getEventStats } from '../../src/repositories/events';
-import { getSources } from '../../src/repositories/sources';
-
-const mockGetEventStats = getEventStats as jest.MockedFunction<typeof getEventStats>;
-const mockGetSources = getSources as jest.MockedFunction<typeof getSources>;
+  getSourceById: jest.fn(),
+};
 
 function makeApp() {
   const app = express();
   app.use(express.json());
-  app.use(statsRouter);
+  app.use(makeStatsRouter(mockEventsRepo, mockSourcesRepo));
   return app;
 }
 
@@ -44,12 +45,12 @@ describe('GET /stats/timeline', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns 200 with correctly formatted buckets for group_by=day', async () => {
-    mockGetEventStats.mockResolvedValueOnce([
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([
       makeStatsBucket({ timestamp: new Date('2026-03-15T00:00:00.000Z'), count: 10 }),
       makeStatsBucket({ timestamp: new Date('2026-03-14T00:00:00.000Z'), count: 7 }),
     ]);
 
-    const res = await request(makeApp()).get('/stats/timeline?group_by=day');
+    const res = await request(makeApp()).get('/timeline?group_by=day');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -59,65 +60,65 @@ describe('GET /stats/timeline', () => {
   });
 
   it('formats time as YYYY-MM for group_by=month', async () => {
-    mockGetEventStats.mockResolvedValueOnce([
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([
       makeStatsBucket({ timestamp: new Date('2026-03-01T00:00:00.000Z'), count: 42 }),
     ]);
 
-    const res = await request(makeApp()).get('/stats/timeline?group_by=month');
+    const res = await request(makeApp()).get('/timeline?group_by=month');
 
     expect(res.status).toBe(200);
     expect(res.body[0].time).toBe('2026-03');
   });
 
   it('formats time as YYYY-MM-DDTHH:mm for group_by=hour', async () => {
-    mockGetEventStats.mockResolvedValueOnce([
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([
       makeStatsBucket({ timestamp: new Date('2026-03-15T08:00:00.000Z'), count: 3 }),
     ]);
 
-    const res = await request(makeApp()).get('/stats/timeline?group_by=hour');
+    const res = await request(makeApp()).get('/timeline?group_by=hour');
 
     expect(res.status).toBe(200);
     expect(res.body[0].time).toBe('2026-03-15T08:00');
   });
 
   it('formats time as YYYY-MM-DDTHH:mm for group_by=minute', async () => {
-    mockGetEventStats.mockResolvedValueOnce([
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([
       makeStatsBucket({ timestamp: new Date('2026-03-15T08:30:00.000Z'), count: 1 }),
     ]);
 
-    const res = await request(makeApp()).get('/stats/timeline?group_by=minute');
+    const res = await request(makeApp()).get('/timeline?group_by=minute');
 
     expect(res.status).toBe(200);
     expect(res.body[0].time).toBe('2026-03-15T08:30');
   });
 
   it('returns 200 with an empty array when there are no buckets', async () => {
-    mockGetEventStats.mockResolvedValueOnce([]);
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([]);
 
-    const res = await request(makeApp()).get('/stats/timeline?group_by=day');
+    const res = await request(makeApp()).get('/timeline?group_by=day');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 
   it('returns 422 when group_by is missing', async () => {
-    const res = await request(makeApp()).get('/stats/timeline');
+    const res = await request(makeApp()).get('/timeline');
 
     expect(res.status).toBe(422);
   });
 
   it('returns 422 when group_by has an invalid value', async () => {
-    const res = await request(makeApp()).get('/stats/timeline?group_by=week');
+    const res = await request(makeApp()).get('/timeline?group_by=week');
 
     expect(res.status).toBe(422);
   });
 
   it('passes group_by to getEventStats', async () => {
-    mockGetEventStats.mockResolvedValueOnce([]);
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([]);
 
-    await request(makeApp()).get('/stats/timeline?group_by=hour');
+    await request(makeApp()).get('/timeline?group_by=hour');
 
-    expect(mockGetEventStats).toHaveBeenCalledWith(
+    expect(mockEventsRepo.getEventStats).toHaveBeenCalledWith(
       expect.objectContaining({ group_by: 'hour' }),
     );
   });
@@ -130,7 +131,7 @@ describe('GET /stats/source', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns 200 with sources sorted by count descending', async () => {
-    mockGetSources.mockResolvedValueOnce([
+    mockSourcesRepo.getSources.mockResolvedValueOnce([
       {
         id: '1', name: 'auth-service', description: null,
         created_at: new Date(), last_used_at: null, is_active: true,
@@ -143,7 +144,7 @@ describe('GET /stats/source', () => {
       },
     ] as any);
 
-    const res = await request(makeApp()).get('/stats/source');
+    const res = await request(makeApp()).get('/source');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -153,16 +154,16 @@ describe('GET /stats/source', () => {
   });
 
   it('returns 200 with an empty array when there are no sources', async () => {
-    mockGetSources.mockResolvedValueOnce([]);
+    mockSourcesRepo.getSources.mockResolvedValueOnce([]);
 
-    const res = await request(makeApp()).get('/stats/source');
+    const res = await request(makeApp()).get('/source');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 
   it('returns sources with zero events', async () => {
-    mockGetSources.mockResolvedValueOnce([
+    mockSourcesRepo.getSources.mockResolvedValueOnce([
       {
         id: '1', name: 'idle-service', description: null,
         created_at: new Date(), last_used_at: null, is_active: true,
@@ -170,7 +171,7 @@ describe('GET /stats/source', () => {
       },
     ] as any);
 
-    const res = await request(makeApp()).get('/stats/source');
+    const res = await request(makeApp()).get('/source');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([{ source: 'idle-service', count: 0 }]);
@@ -184,12 +185,12 @@ describe('GET /stats/severity', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns 200 with aggregated severity counts', async () => {
-    mockGetEventStats.mockResolvedValueOnce([
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([
       makeStatsBucket({ critical: 5, warning: 10, info: 20, count: 35 }),
       makeStatsBucket({ critical: 3, warning: 2, info: 7, count: 12 }),
     ]);
 
-    const res = await request(makeApp()).get('/stats/severity');
+    const res = await request(makeApp()).get('/severity');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -200,9 +201,9 @@ describe('GET /stats/severity', () => {
   });
 
   it('returns zeros when there are no events', async () => {
-    mockGetEventStats.mockResolvedValueOnce([]);
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([]);
 
-    const res = await request(makeApp()).get('/stats/severity');
+    const res = await request(makeApp()).get('/severity');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -213,11 +214,11 @@ describe('GET /stats/severity', () => {
   });
 
   it('always returns all three severity levels in order: critical, warning, info', async () => {
-    mockGetEventStats.mockResolvedValueOnce([
+    mockEventsRepo.getEventStats.mockResolvedValueOnce([
       makeStatsBucket({ critical: 1, warning: 0, info: 0 }),
     ]);
 
-    const res = await request(makeApp()).get('/stats/severity');
+    const res = await request(makeApp()).get('/severity');
 
     expect(res.status).toBe(200);
     expect(res.body.map((b: { severity: string }) => b.severity)).toEqual([

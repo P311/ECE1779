@@ -1,10 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { getEventStats } from '../repositories/events';
-import { getSources } from '../repositories/sources';
-import type { TimelineBucket, SourceBucket, SeverityBucket } from '../repositories/types';
+import type { EventsRepository, SourcesRepository, TimelineBucket, SourceBucket, SeverityBucket } from '../repositories/types';
 import { validateQuery, getStatsQuerySchema } from './middleware/validation';
-
-const router = Router();
 
 const EPOCH_START = '1970-01-01T00:00:00.000Z';
 
@@ -23,78 +19,82 @@ function formatTimestamp(ts: Date, groupBy: string): string {
   }
 }
 
-router.get(
-  '/stats/timeline',
-  validateQuery(getStatsQuerySchema),
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { group_by } = (
-        req as Request & { parsedQuery: { group_by: 'minute' | 'hour' | 'day' | 'month' } }
-      ).parsedQuery;
+export function makeStatsRouter(eventsRepo: EventsRepository, sourcesRepo: SourcesRepository): Router {
+  const router = Router();
 
-      const buckets = await getEventStats({
-        group_by,
-        start_time: EPOCH_START,
-        end_time: new Date().toISOString(),
-      });
+  router.get(
+    '/timeline',
+    validateQuery(getStatsQuerySchema),
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const { group_by } = (
+          req as Request & { parsedQuery: { group_by: 'minute' | 'hour' | 'day' | 'month' } }
+        ).parsedQuery;
 
-      const result: TimelineBucket[] = buckets.map((b) => ({
-        time: formatTimestamp(b.timestamp, group_by),
-        count: b.count,
-      }));
+        const buckets = await eventsRepo.getEventStats({
+          group_by,
+          start_time: EPOCH_START,
+          end_time: new Date().toISOString(),
+        });
 
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  },
-);
+        const result: TimelineBucket[] = buckets.map((b) => ({
+          time: formatTimestamp(b.timestamp, group_by),
+          count: b.count,
+        }));
 
-router.get(
-  '/stats/source',
-  async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const sources = await getSources();
-
-      const result: SourceBucket[] = sources
-        .map((s) => ({ source: s.name, count: s.stats.total_events }))
-        .sort((a, b) => b.count - a.count);
-
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  },
-);
-
-router.get(
-  '/stats/severity',
-  async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const buckets = await getEventStats({
-        group_by: 'day',
-        start_time: EPOCH_START,
-        end_time: new Date().toISOString(),
-      });
-
-      const totals = { critical: 0, warning: 0, info: 0 };
-      for (const b of buckets) {
-        totals.critical += b.critical;
-        totals.warning += b.warning;
-        totals.info += b.info;
+        res.json(result);
+      } catch (err) {
+        next(err);
       }
+    },
+  );
 
-      const result: SeverityBucket[] = [
-        { severity: 'critical', count: totals.critical },
-        { severity: 'warning', count: totals.warning },
-        { severity: 'info', count: totals.info },
-      ];
+  router.get(
+    '/source',
+    async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const sources = await sourcesRepo.getSources();
 
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  },
-);
+        const result: SourceBucket[] = sources
+          .map((s) => ({ source: s.name, count: s.stats.total_events }))
+          .sort((a, b) => b.count - a.count);
 
-export default router;
+        res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  router.get(
+    '/severity',
+    async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const buckets = await eventsRepo.getEventStats({
+          group_by: 'day',
+          start_time: EPOCH_START,
+          end_time: new Date().toISOString(),
+        });
+
+        const totals = { critical: 0, warning: 0, info: 0 };
+        for (const b of buckets) {
+          totals.critical += b.critical;
+          totals.warning += b.warning;
+          totals.info += b.info;
+        }
+
+        const result: SeverityBucket[] = [
+          { severity: 'critical', count: totals.critical },
+          { severity: 'warning', count: totals.warning },
+          { severity: 'info', count: totals.info },
+        ];
+
+        res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  return router;
+}

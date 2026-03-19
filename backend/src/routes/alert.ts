@@ -1,37 +1,38 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { validateBody, putAlertConfigSchema } from './middleware/validation';
+import { AlertRepository } from '../repositories/types';
 
-const router = Router();
+export function makeAlertRouter(repo: AlertRepository) {
+  const router = Router();
 
-export interface AlertConfig {
-  active: boolean;
-  time_window_minutes: number;
-  event_threshold: number;
-  email: string;
+  router.get(
+    '/config',
+    async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const config = await repo.getAlertConfig();
+        res.json(config);
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  router.put(
+    '/config',
+    validateBody(putAlertConfigSchema),
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const updated = await repo.upsertAlertConfig(req.body);
+        res.json({
+          active: updated.active,
+          time_window_minutes: updated.time_window_minutes,
+          event_threshold: updated.event_threshold,
+        });
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  return router;
 }
-
-export let alertConfig: AlertConfig = {
-  active: false,
-  time_window_minutes: 0,
-  event_threshold: 0,
-  email: '',
-};
-
-router.put(
-  '/alert/config',
-  validateBody(putAlertConfigSchema),
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      alertConfig = req.body as AlertConfig;
-      res.json({
-        active: alertConfig.active,
-        time_window_minutes: alertConfig.time_window_minutes,
-        event_threshold: alertConfig.event_threshold,
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
-);
-
-export default router;

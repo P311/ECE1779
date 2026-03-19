@@ -115,3 +115,15 @@ export type SourcesRepository = {
   getSources(): Promise<SourceWithStats[]>;
   getSourceById(id: string): Promise<Source | null>;
 };
+
+export interface AlertConfig {
+  active: boolean;
+  time_window_minutes: number;
+  event_threshold: number;
+  email: string;
+}
+
+export type AlertRepository = {
+  getAlertConfig(): Promise<AlertConfig>;
+  upsertAlertConfig(config: AlertConfig): Promise<AlertConfig>;
+};
