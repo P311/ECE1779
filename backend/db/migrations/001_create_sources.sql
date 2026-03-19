@@ -18,4 +18,4 @@ COMMENT ON TABLE sources IS 'Registered event sources with unique API keys';
 COMMENT ON COLUMN sources.key_prefix IS 'Non-secret identifier used to locate the source API key record';
 COMMENT ON COLUMN sources.api_key_hash IS 'Hash of the full API key used for authentication';
 COMMENT ON COLUMN sources.last_used_at IS 'Timestamp of the most recent successful authentication';
-COMMENT ON COLUMN sources.is_active IS 'Whether the source is allowed to authenticate and ingest events'
+COMMENT ON COLUMN sources.is_active IS 'Whether the source is allowed to authenticate and ingest events';

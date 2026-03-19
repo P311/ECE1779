@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { pool } from "./index";
+import { pool } from "./db";
 import type {
   Source,
   CreatedSource,
@@ -58,9 +58,7 @@ export async function createSource(
   };
 }
 
-export async function getSourceByApiKey(
-  key: string,
-): Promise<SourceRow | null> {
+export async function getSourceByApiKey(key: string): Promise<Source | null> {
   const keyPrefix = extractKeyPrefix(key);
   if (!keyPrefix) {
     return null;
@@ -77,6 +75,19 @@ export async function getSourceByApiKey(
   }
 
   const incomingHash = hashApiKey(key);
+  const storedHash = source.api_key_hash;
+
+  // Validate stored hash before using timingSafeEqual to avoid throwing errors on length/format issues
+  const hexSha256 = /^[0-9a-f]{64}$/i;
+  if (
+    !storedHash ||
+    typeof storedHash !== "string" ||
+    storedHash.length !== incomingHash.length ||
+    !hexSha256.test(storedHash) ||
+    !hexSha256.test(incomingHash)
+  ) {
+    return null;
+  }
   const isMatch = crypto.timingSafeEqual(
     Buffer.from(source.api_key_hash, "hex"),
     Buffer.from(incomingHash, "hex"),
@@ -85,13 +96,18 @@ export async function getSourceByApiKey(
     return null;
   }
 
-  await pool.query(`UPDATE sources SET last_used_at = NOW() WHERE id = $1`, [
-    source.id,
-  ]);
+  const { rows: updated } = await pool.query<{ last_used_at: Date }>(
+    `UPDATE sources SET last_used_at = NOW() WHERE id = $1 RETURNING last_used_at`,
+    [source.id],
+  );
 
   return {
-    ...source,
-    last_used_at: new Date(),
+    id: source.id,
+    name: source.name,
+    description: source.description,
+    created_at: source.created_at,
+    last_used_at: updated[0]?.last_used_at ?? source.last_used_at,
+    is_active: source.is_active,
   };
 }
 

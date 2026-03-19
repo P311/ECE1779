@@ -1,4 +1,4 @@
-import { pool } from "./index";
+import type { Pool } from "pg";
 import type {
   Event,
   EventFilters,
@@ -9,12 +9,18 @@ import type {
   EventsRepository,
 } from "./types";
 
+async function getPool(): Promise<Pool> {
+  const module = await import("./db.js");
+  return module.pool as Pool;
+}
+
 export async function insertEvent(
   sourceId: string,
   eventType: string,
   severity: "info" | "warning" | "critical",
   payload: Record<string, unknown>,
 ): Promise<Event> {
+  const pool = await getPool();
   const { rows } = await pool.query<Event>(
     `INSERT INTO events (source_id, event_type, severity, payload)
      VALUES ($1, $2, $3, $4)
@@ -36,6 +42,7 @@ export async function insertEventsBatch(
   const severities = events.map((e) => e.severity);
   const payloads = events.map((e) => JSON.stringify(e.payload ?? {}));
   const sourceIds = events.map(() => sourceId);
+  const pool = await getPool();
 
   const { rows } = await pool.query<Event>( // Insert events as batch using UNNEST for efficiency
     `INSERT INTO events (source_id, event_type, severity, payload)
@@ -83,6 +90,7 @@ export async function queryEvents(
   const where =
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
+  const pool = await getPool();
   const countResult = await pool.query<{ count: string }>(
     `SELECT COUNT(*) as count FROM events ${where}`,
     params,
@@ -119,6 +127,7 @@ export async function getEventStats(
   const where = `WHERE ${conditions.join(" AND ")}`;
   const trunc = params.group_by === "hour" ? "hour" : "day";
 
+  const pool = await getPool();
   const { rows } = await pool.query<{
     timestamp: Date;
     count: string;

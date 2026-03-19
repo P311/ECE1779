@@ -96,7 +96,7 @@ export type SourcesRepository = {
     name: string,
     description?: string | null,
   ): Promise<CreatedSource>;
-  getSourceByApiKey(key: string): Promise<SourceRow | null>;
+  getSourceByApiKey(key: string): Promise<Source | null>;
   getSources(): Promise<SourceWithStats[]>;
   getSourceById(id: string): Promise<Source | null>;
 };
