@@ -3,13 +3,14 @@ import { sourceRateLimit } from '../../../src/routes/middleware/rateLimit';
 import { Request, Response, NextFunction } from 'express';
 import { Source } from '../../../src/repositories/types';
 
-function makeSource(api_key: string): Source {
+function makeSource(id: string): Source {
   return {
-    id: '1',
+    id,
     name: 'Test Source',
     description: null,
-    api_key,
     created_at: new Date(),
+    last_used_at: null,
+    is_active: true,
   };
 }
 
@@ -41,7 +42,7 @@ describe('sourceRateLimit', () => {
   });
 
   it('calls next() for a request under the rate limit', () => {
-    const req = mockReq(makeSource('key-under-limit')) as Request;
+    const req = mockReq(makeSource('id-under-limit')) as Request;
     const res = mockRes() as unknown as Response;
     const next = jest.fn() as unknown as NextFunction;
 
@@ -52,7 +53,7 @@ describe('sourceRateLimit', () => {
   });
 
   it('returns 429 with the correct error body when rate limit is exceeded', () => {
-    const source = makeSource('key-over-limit');
+    const source = makeSource('id-over-limit');
 
     // Consume all 1000 allowed requests
     for (let i = 0; i < 1000; i++) {
@@ -78,7 +79,7 @@ describe('sourceRateLimit', () => {
   });
 
   it('allows requests again after the sliding window has passed', () => {
-    const source = makeSource('key-window-reset');
+    const source = makeSource('id-window-reset');
     const baseTime = 1_000_000;
     const dateSpy = jest.spyOn(Date, 'now').mockReturnValue(baseTime);
 
@@ -103,8 +104,8 @@ describe('sourceRateLimit', () => {
   });
 
   it('tracks rate limits independently per API key', () => {
-    const sourceA = makeSource('key-independent-a');
-    const sourceB = makeSource('key-independent-b');
+    const sourceA = makeSource('id-independent-a');
+    const sourceB = makeSource('id-independent-b');
 
     // Exhaust the limit for sourceA
     for (let i = 0; i < 1000; i++) {
@@ -125,7 +126,7 @@ describe('sourceRateLimit', () => {
   });
 
   it('does not count requests outside the window toward the limit', () => {
-    const source = makeSource('key-partial-window');
+    const source = makeSource('id-partial-window');
     const baseTime = 2_000_000;
     const dateSpy = jest.spyOn(Date, 'now').mockReturnValue(baseTime);
 

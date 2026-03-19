@@ -125,7 +125,7 @@ export async function getEventStats(
   }
 
   const where = `WHERE ${conditions.join(" AND ")}`;
-  const trunc = params.group_by === "hour" ? "hour" : "day";
+  const trunc = params.group_by;
 
   const pool = await getPool();
   const { rows } = await pool.query<{

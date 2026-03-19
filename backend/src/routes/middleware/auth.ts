@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Source, SourcesRepository } from '../../repositories/types';
-import { config } from '../config';
+import { config } from '../../config';
 
 function extractBearer(req: Request): string | null {
   const header = req.headers.authorization;

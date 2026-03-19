@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { config } from '../config';
+import { config } from '../../config';
 
 const windowMap = new Map<string, number[]>();
 
@@ -10,7 +10,7 @@ export function sourceRateLimit(req: Request, res: Response, next: NextFunction)
     return;
   }
 
-  const key = source.api_key;
+  const key = source.id;
   const now = Date.now();
   const windowStart = now - config.rateLimit.windowMs;
 

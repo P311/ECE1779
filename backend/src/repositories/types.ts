@@ -53,7 +53,7 @@ export interface PaginationParams {
 }
 
 export interface EventStatsParams {
-  group_by: "hour" | "day";
+  group_by: "minute" | "hour" | "day" | "month";
   start_time: string;
   end_time: string;
   source_id?: string;
@@ -65,6 +65,21 @@ export interface StatsBucket {
   critical: number;
   warning: number;
   info: number;
+}
+
+export interface TimelineBucket {
+  time: string;
+  count: number;
+}
+
+export interface SourceBucket {
+  source: string;
+  count: number;
+}
+
+export interface SeverityBucket {
+  severity: string;
+  count: number;
 }
 
 export interface BatchEventInput {
