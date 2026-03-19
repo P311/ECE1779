@@ -1,0 +1,6 @@
+{
+  "active": true,
+  "time_window_minutes": 10,
+  "event_threshold": 1,
+  "email": "test@mail.utoronto.ca"
+}

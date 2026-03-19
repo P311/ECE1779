@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { Source, SourcesRepository } from '@backend/src/repositories/types';
-import { config } from '@backend/src/routes/config';
+import { Source, SourcesRepository } from '../../repositories/types';
+import { config } from '../config';
 
 function extractBearer(req: Request): string | null {
   const header = req.headers.authorization;
@@ -8,7 +8,7 @@ function extractBearer(req: Request): string | null {
   return header.slice(7).trim();
 }
 
-export function makeSourceAuth(repo: Pick<SourcesRepository, 'getSourceByApiKey'>) {
+export function makeSourceAuth(repo: SourcesRepository) {
   return function (req: Request, res: Response, next: NextFunction): void {
     const token = extractBearer(req);
     if (!token) {

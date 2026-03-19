@@ -1,0 +1,5 @@
+[
+  { "severity": "critical", "count": 5 },
+  { "severity": "warning", "count": 4 },
+  { "severity": "info", "count": 11 }
+]

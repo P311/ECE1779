@@ -20,6 +20,21 @@ export interface Source {
   };
 }
 
+export interface StatsSeverity {
+  severity: string;
+  count: number;
+}
+
+export interface StatsTimeline {
+  time: string;
+  count: number;
+}
+
+export interface StatsSource {
+  source: string;
+  count: number;
+}
+
 export const SEVERITY_COLOR: Record<string, string> = {
   info: "#2196f3",
   warning: "#ff9800",

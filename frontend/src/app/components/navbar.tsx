@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Events" },
   { href: "/source", label: "Sources" },
   { href: "/analytics", label: "Analytics" },
+  { href: "/alert", label: "Alert" },
 ];
 
 export default function Navbar() {

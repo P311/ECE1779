@@ -1,0 +1,6 @@
+[
+  { "source": "web-app", "count": 1240 },
+  { "source": "mobile-ios", "count": 872 },
+  { "source": "payment-service", "count": 564 },
+  { "source": "data-pipeline", "count": 331 }
+]
