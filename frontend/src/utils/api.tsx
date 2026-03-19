@@ -10,7 +10,7 @@ interface ApiResponse<T = unknown> {
 export async function apiRequest<T = unknown>(
   path: string,
   method: string = "GET",
-  body?: unknown
+  body?: unknown,
 ): Promise<ApiResponse<T>> {
   try {
     const res = await fetch(`${API_BASE}${path}`, {
