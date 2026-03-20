@@ -1,4 +1,4 @@
-import { Source } from "@/backend/src/repositories/types";
+import type { Source } from "../../repositories/types";
 
 declare global {
   namespace Express {
@@ -8,3 +8,5 @@ declare global {
     }
   }
 }
+
+export {};

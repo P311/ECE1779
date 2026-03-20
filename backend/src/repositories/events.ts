@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import { pool } from "./db";
 import type {
   Event,
   EventFilters,
@@ -9,9 +10,8 @@ import type {
   EventsRepository,
 } from "./types";
 
-async function getPool(): Promise<Pool> {
-  const module = await import("./db.js");
-  return module.pool as Pool;
+function getPool(): Pool {
+  return pool;
 }
 
 export async function insertEvent(
@@ -66,48 +66,60 @@ export async function queryEvents(
   const params: unknown[] = [];
   let idx = 1;
 
-  if (filters.source_id) {
-    conditions.push(`source_id = $${idx++}`);
-    params.push(filters.source_id);
-  }
-  if (filters.event_type) {
-    conditions.push(`event_type = $${idx++}`);
-    params.push(filters.event_type);
-  }
-  if (filters.severity) {
-    conditions.push(`severity = $${idx++}`);
-    params.push(filters.severity);
-  }
-  if (filters.start_time) {
-    conditions.push(`ingested_at >= $${idx++}`);
-    params.push(filters.start_time);
-  }
-  if (filters.end_time) {
-    conditions.push(`ingested_at <= $${idx++}`);
-    params.push(filters.end_time);
-  }
+  let where = "";
+  let filterValue: string | undefined;
 
-  const where =
-    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  if (filters.id) {
+    where = `WHERE id::text ILIKE $1`;
+    filterValue = `%${filters.id}%`;
+  } else if (filters.source_id) {
+    where = `WHERE source_id::text ILIKE $1`;
+    filterValue = `%${filters.source_id}%`;
+  } else if (filters.event_type) {
+    where = `WHERE event_type ILIKE $1`;
+    filterValue = `%${filters.event_type}%`;
+  } else if (filters.severity) {
+    where = `WHERE severity ILIKE $1`;
+    filterValue = `%${filters.severity}%`;
+  } else if (filters.payload) {
+    where = `WHERE payload::text ILIKE $1`;
+    filterValue = `%${filters.payload}%`;
+  } else if (filters.ingested_at) {
+    where = `WHERE ingested_at::text ILIKE $1`;
+    filterValue = `%${filters.ingested_at}%`;
+  }
 
   const pool = await getPool();
+  const countParams = filterValue ? [filterValue] : [];
   const countResult = await pool.query<{ count: string }>(
-    `SELECT COUNT(*) as count FROM events ${where}`,
-    params,
+    `SELECT COUNT(*) AS count FROM events ${where}`,
+    countParams,
   );
+
   const total = countResult.rows[0]
     ? parseInt(countResult.rows[0].count, 10)
     : 0;
 
   const offset = (pagination.page - 1) * pagination.limit;
-  params.push(pagination.limit, offset);
-
-  const { rows } = await pool.query<Event>(
-    `SELECT * FROM events ${where}
-     ORDER BY ingested_at DESC
-     LIMIT $${idx++} OFFSET $${idx++}`,
-    params,
-  );
+  let rows;
+  if (filterValue) {
+    const result = await pool.query<Event>(
+      `SELECT * FROM events
+       ${where}
+       ORDER BY ingested_at DESC
+       LIMIT $2 OFFSET $3`,
+      [filterValue, pagination.limit, offset],
+    );
+    rows = result.rows;
+  } else {
+    const result = await pool.query<Event>(
+      `SELECT * FROM events
+       ORDER BY ingested_at DESC
+       LIMIT $1 OFFSET $2`,
+      [pagination.limit, offset],
+    );
+    rows = result.rows;
+  }
 
   return { data: rows, total };
 }
@@ -157,9 +169,34 @@ export async function getEventStats(
   }));
 }
 
+export async function countEventsWithinMinutes(
+  minutes: number,
+): Promise<number> {
+  const pool = await getPool();
+  const { rows } = await pool.query<{ count: string }>(
+    `SELECT COUNT(*) AS count FROM events WHERE ingested_at >= NOW() - ($1 * INTERVAL '1 minute')`,
+    [minutes],
+  );
+
+  return rows[0] ? parseInt(rows[0].count, 10) : 0;
+}
+
+export async function deleteEvent(id: string): Promise<boolean> {
+  const pool = await getPool();
+  const result = await pool.query(
+    `DELETE FROM events
+     WHERE id = $1`,
+    [id],
+  );
+
+  return (result.rowCount ?? 0) > 0;
+}
+
 export const eventsRepository: EventsRepository = {
   insertEvent,
   insertEventsBatch,
   queryEvents,
+  countEventsWithinMinutes,
   getEventStats,
+  deleteEvent,
 };

@@ -10,7 +10,7 @@
     "module": "nodenext",
     "target": "esnext",
     "lib": ["esnext"],
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "express"],
     // For nodejs:
     // and npm install -D @types/node
 
@@ -39,5 +39,9 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   }
+
+  ,
+  "include": ["src/**/*"]
 }

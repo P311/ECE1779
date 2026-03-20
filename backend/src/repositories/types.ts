@@ -40,11 +40,12 @@ export interface Event {
 }
 
 export interface EventFilters {
+  id?: string;
   source_id?: string;
   event_type?: string;
   severity?: string;
-  start_time?: string;
-  end_time?: string;
+  payload?: string;
+  ingested_at?: string;
 }
 
 export interface PaginationParams {
@@ -103,7 +104,9 @@ export type EventsRepository = {
     filters: EventFilters,
     pagination: PaginationParams,
   ): Promise<{ data: Event[]; total: number }>;
+  countEventsWithinMinutes(minutes: number): Promise<number>;
   getEventStats(params: EventStatsParams): Promise<StatsBucket[]>;
+  deleteEvent(id: string): Promise<boolean>;
 };
 
 export type SourcesRepository = {

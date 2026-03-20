@@ -7,6 +7,7 @@ import type {
   SourcesRepository,
   SourceRow,
 } from "./types";
+import { ConflictError } from "../errors/ConflictError";
 
 function generateApiKey(): {
   apiKey: string;
@@ -39,23 +40,31 @@ export async function createSource(
   name: string,
   description?: string | null,
 ): Promise<CreatedSource> {
-  const { apiKey, keyPrefix, apiKeyHash } = generateApiKey();
+  try {
+    const { apiKey, keyPrefix, apiKeyHash } = generateApiKey();
 
-  const { rows } = await pool.query<Source>(
-    `INSERT INTO sources (name, description, key_prefix, api_key_hash)
+    const { rows } = await pool.query<Source>(
+      `INSERT INTO sources (name, description, key_prefix, api_key_hash)
      VALUES ($1, $2, $3, $4)
      RETURNING id, name, description, created_at, last_used_at, is_active`,
-    [name, description ?? null, keyPrefix, apiKeyHash],
-  );
+      [name, description ?? null, keyPrefix, apiKeyHash],
+    );
 
-  if (!rows[0]) {
-    throw new Error("Failed to create source");
+    if (!rows[0]) {
+      throw new Error("Failed to create source");
+    }
+
+    return {
+      ...rows[0],
+      api_key: apiKey, // Return the full API key only on creation
+    };
+  } catch (err: any) {
+    if (err.code === "23505") {
+      // Unique key violation
+      throw new ConflictError(`Source '${name}' already exists.`);
+    }
   }
-
-  return {
-    ...rows[0],
-    api_key: apiKey, // Return the full API key only on creation
-  };
+  throw new Error("Unreachable");
 }
 
 export async function getSourceByApiKey(key: string): Promise<Source | null> {
