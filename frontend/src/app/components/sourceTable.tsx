@@ -25,10 +25,16 @@ import {
 } from "@/components/ui/table"
 
 
+const PAGE_SIZE = 15;
+
 export default function SourceTable({ sources }: { sources: Source[] }) {
   const [searchField, setSearchField] = useState<string>("id");
   const [searchValue, setSearchValue] = useState("");
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(sources.length / PAGE_SIZE));
+  const paginatedSources = sources.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   function search() {
     // TODO: API interaction
@@ -79,7 +85,7 @@ export default function SourceTable({ sources }: { sources: Source[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sources.map((source) => (
+            {paginatedSources.map((source) => (
               <TableRow key={source.id} className="hover:bg-gray-100 hover:cursor-pointer" onClick={() => setSelectedSource(source)}>
                 {Object.entries(source).map(([key, value]) => (
                   <TableCell key={key}>
@@ -91,15 +97,14 @@ export default function SourceTable({ sources }: { sources: Source[] }) {
           </TableBody>
         </Table>
       </div>
-      {/* TODO: Pagination from API*/}
       <div className="mt-4 flex-row justify-center">
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
           Previous
         </Button>
         <div className="text-md text-gray-500" style={{ alignContent: "center", margin: "0 1rem" }}>
-          Page 1 of ?
+          Page {page} of {totalPages}
         </div>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
           Next
         </Button>
       </div>
