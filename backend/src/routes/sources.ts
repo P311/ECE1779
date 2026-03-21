@@ -1,5 +1,4 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { adminAuth } from "./middleware/auth";
 import { validateBody, postSourceSchema } from "./middleware/validation";
 import type { SourcesRepository } from "../repositories/types";
 
@@ -9,7 +8,6 @@ export function makeSourcesRouter(sourcesRepo: SourcesRepository): Router {
   // GET /sources - list all sources with stats
   router.get(
     "/",
-    adminAuth,
     async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const sources = await sourcesRepo.getSources();
@@ -23,7 +21,6 @@ export function makeSourcesRouter(sourcesRepo: SourcesRepository): Router {
   // POST /sources - register a new source
   router.post(
     "/",
-    adminAuth,
     validateBody(postSourceSchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {

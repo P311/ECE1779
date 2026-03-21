@@ -1,5 +1,4 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
-const ADMIN_API_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || "admin-dev-key";
 
 interface ApiResponse<T = unknown> {
   data: T | null;
@@ -18,7 +17,6 @@ export async function apiRequest<T = unknown>(
       method,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${ADMIN_API_KEY}`,
       },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });

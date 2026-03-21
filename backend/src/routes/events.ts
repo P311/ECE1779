@@ -1,6 +1,4 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { makeSourceAuth, adminAuth } from "./middleware/auth";
-import { sourceRateLimit } from "./middleware/rateLimit";
 import {
   validateBody,
   validateQuery,
@@ -10,7 +8,6 @@ import {
 import { z } from "zod";
 import type {
   EventsRepository,
-  SourcesRepository,
   AlertRepository,
   BatchEventInput,
   EventFilters,
@@ -19,7 +16,6 @@ import type {
 
 export function makeEventsRouter(
   eventsRepo: EventsRepository,
-  sourcesRepo: SourcesRepository,
   alertRepo?: AlertRepository,
   notifier?: {
     send: (to: string, subject: string, text: string) => Promise<void>;
@@ -27,29 +23,26 @@ export function makeEventsRouter(
 ): Router {
   const router = Router();
 
-  const sourceAuth = makeSourceAuth(sourcesRepo);
-
   const postBatchSchema = z.object({
+    source_id: z.uuid(),
     events: z.array(postEventSchema.omit({ source_id: true })).max(100),
   });
 
   // POST /events - ingest single event
   router.post(
     "/",
-    sourceAuth,
-    sourceRateLimit,
-    validateBody(postEventSchema.omit({ source_id: true })),
+    validateBody(postEventSchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
-        const { event_type, severity, payload } = req.body as {
+        const { source_id, event_type, severity, payload } = req.body as {
+          source_id: string;
           event_type: string;
           severity: "info" | "warning" | "critical";
           payload?: Record<string, unknown>;
         };
 
-        const source = (req as Request & { source?: any }).source!;
         const event = await eventsRepo.insertEvent(
-          source.id,
+          source_id,
           event_type,
           severity,
           payload ?? {},
@@ -86,14 +79,11 @@ export function makeEventsRouter(
   // POST /events/batch - ingest up to 100 events
   router.post(
     "/batch",
-    sourceAuth,
-    sourceRateLimit,
     validateBody(postBatchSchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
-        const { events } = req.body as { events: BatchEventInput[] };
-        const source = (req as Request & { source?: any }).source!;
-        const inserted = await eventsRepo.insertEventsBatch(source.id, events);
+        const { source_id, events } = req.body as { source_id: string; events: BatchEventInput[] };
+        const inserted = await eventsRepo.insertEventsBatch(source_id, events);
 
         if (alertRepo && notifier) {
           const config = await alertRepo.getAlertConfig();
@@ -126,7 +116,6 @@ export function makeEventsRouter(
   // GET /events - query events with filters
   router.get(
     "/",
-    adminAuth,
     validateQuery(getEventsQuerySchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
@@ -189,7 +178,6 @@ export function makeEventsRouter(
   // DELETE /events/:id - permanently remove an event by id
   router.delete(
     "/:id",
-    adminAuth,
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { id } = req.params;

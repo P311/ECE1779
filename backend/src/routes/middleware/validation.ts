@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 
 export const postEventSchema = z.object({
-  source_id: z.string().uuid(),
+  source_id: z.uuid(),
   event_type: z.string().min(1).max(100),
   severity: z.enum(['info', 'warning', 'critical']),
   payload: z.record(z.string(), z.unknown()).catch({}),
