@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Event, SEVERITY_COLOR} from "../types";
+import { Event, SEVERITY_COLOR } from "../types";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -11,9 +11,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import {
   Table,
@@ -22,21 +27,35 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
+const SEARCH_FIELDS = [
+  "id",
+  "source_id",
+  "event_type",
+  "severity",
+  "payload",
+  "ingested_at",
+];
 
-export default function EventTable({ events }: { events: Event[] }) {
-  const [searchField, setSearchField] = useState<string>("id");
+export default function EventTable({
+  events,
+  page,
+  totalPages,
+  onPageChange,
+  onSearch,
+}: {
+  events: Event[];
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onSearch: (field: string, value: string) => void;
+}) {
+  const [searchField, setSearchField] = useState("id");
   const [searchValue, setSearchValue] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  function search() {
-    // TODO: API interaction
-    console.log("Search clicked with field:", searchField, "and query:", searchValue);
-  }
-
   function processValue(value: any) {
-    // stringfy json obj
     if (typeof value === "object") {
       value = JSON.stringify(value);
     }
@@ -45,6 +64,7 @@ export default function EventTable({ events }: { events: Event[] }) {
     }
     return String(value);
   }
+
   return (
     <div>
       <div className="flex-row ">
@@ -54,7 +74,7 @@ export default function EventTable({ events }: { events: Event[] }) {
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              {Object.keys(events[0] || {}).map((key) => (
+              {SEARCH_FIELDS.map((key) => (
                 <SelectItem key={key} value={key}>
                   {key}
                 </SelectItem>
@@ -62,8 +82,14 @@ export default function EventTable({ events }: { events: Event[] }) {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Input value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
-        <Button variant="outline" onClick={search}>
+        <Input
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+        />
+        <Button
+          variant="outline"
+          onClick={() => onSearch(searchField, searchValue)}
+        >
           Search
         </Button>
       </div>
@@ -71,18 +97,28 @@ export default function EventTable({ events }: { events: Event[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              {Object.keys(events[0] || {}).map((key) => (
-                <TableHead>
-                  {key}
-                </TableHead>
+              {SEARCH_FIELDS.map((key) => (
+                <TableHead key={key}>{key}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {events.map((event) => (
-              <TableRow key={event.id} className="hover:bg-gray-100 hover:cursor-pointer" onClick={() => setSelectedEvent(event)}>
+              <TableRow
+                key={event.id}
+                className="hover:bg-gray-100 hover:cursor-pointer"
+                onClick={() => setSelectedEvent(event)}
+              >
                 {Object.entries(event).map(([key, value]) => (
-                  <TableCell key={key} style={{ color: key==="severity" ? SEVERITY_COLOR[event.severity] : undefined }}>
+                  <TableCell
+                    key={key}
+                    style={{
+                      color:
+                        key === "severity"
+                          ? SEVERITY_COLOR[event.severity]
+                          : undefined,
+                    }}
+                  >
                     {processValue(value)}
                   </TableCell>
                 ))}
@@ -90,21 +126,38 @@ export default function EventTable({ events }: { events: Event[] }) {
             ))}
           </TableBody>
         </Table>
-      </div> 
-      {/* TODO: Pagination from API*/}
+      </div>
       <div className="mt-4 flex-row justify-center">
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+        >
           Previous
         </Button>
-        <div className="text-md text-gray-500" style={{ alignContent: "center", margin: "0 1rem" }}>
-          Page 1 of ?
+        <div
+          className="text-md text-gray-500"
+          style={{ alignContent: "center", margin: "0 1rem" }}
+        >
+          Page {page} of {totalPages}
         </div>
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+        >
           Next
         </Button>
       </div>
 
-      <Dialog open={!!selectedEvent} onOpenChange={(open) => { if (!open) setSelectedEvent(null); }}>
+      <Dialog
+        open={!!selectedEvent}
+        onOpenChange={(open) => {
+          if (!open) setSelectedEvent(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Event Details</DialogTitle>
@@ -113,14 +166,24 @@ export default function EventTable({ events }: { events: Event[] }) {
             <div className="space-y-4 mt-4">
               {Object.entries(selectedEvent).map(([key, value]) => (
                 <div key={key} className="space-y-1">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{key}</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    {key}
+                  </p>
                   <div>
                     {typeof value === "object" ? (
                       <pre className="bg-muted rounded-md p-3 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
                         {JSON.stringify(value, null, 2)}
                       </pre>
                     ) : (
-                      <span className="text-sm" style={{ color: key === "severity" ? SEVERITY_COLOR[selectedEvent.severity] : undefined }}>
+                      <span
+                        className="text-sm"
+                        style={{
+                          color:
+                            key === "severity"
+                              ? SEVERITY_COLOR[selectedEvent.severity]
+                              : undefined,
+                        }}
+                      >
                         {String(value)}
                       </span>
                     )}

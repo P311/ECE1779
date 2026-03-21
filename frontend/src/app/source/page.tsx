@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import SourceTable from "../components/sourceTable";
-import sources from "@/testing_data/sources.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,16 +12,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { usePolling } from "@/hooks/usePolling";
+import { apiRequest } from "@/utils/api";
+import { Source } from "../types";
 
 export default function SourcePage() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const handleSubmit = () => {
+  const { data: sources } = usePolling<Source[]>("/api/v1/sources");
+
+  const handleSubmit = async () => {
     const body = { name, description };
-    // TODO: POST /api/v1/sources
-    console.log("Creating source:", body);
+    await apiRequest("/api/v1/sources", "POST", body);
     setOpen(false);
     setName("");
     setDescription("");
@@ -67,7 +70,7 @@ export default function SourcePage() {
         </Dialog>
       </div>
       <div style={{ marginTop: "1.5rem" }}>
-        <SourceTable sources={sources} />
+        <SourceTable sources={sources ?? []} />
       </div>
     </main>
   );
