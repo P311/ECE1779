@@ -12,8 +12,15 @@ export default function AlertPage() {
   const [timeWindow, setTimeWindow] = useState(alertConfig.time_window_minutes);
   const [threshold, setThreshold] = useState(alertConfig.event_threshold);
   const [email, setEmail] = useState(alertConfig.email);
+  const [emailError, setEmailError] = useState("");
 
   const handleSave = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+    setEmailError("");
     const config = {
       active,
       time_window_minutes: timeWindow,
@@ -39,9 +46,16 @@ export default function AlertPage() {
             id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setEmailError("");
+            }}
             placeholder="alert@example.com"
+            aria-invalid={!!emailError}
           />
+          {emailError && (
+            <p className="text-sm text-destructive">{emailError}</p>
+          )}
         </div>
 
         <div className="space-y-2">
