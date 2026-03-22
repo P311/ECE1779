@@ -4,12 +4,6 @@
 
 ---
 
-## Auth
-
-TBD
-
----
-
 ## Events
 
 ### `GET /events`

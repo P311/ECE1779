@@ -25,7 +25,6 @@ services:
     environment:
       PORT: "8000"
       DATABASE_URL: postgres://dev:devpass@db:5432/eventdb
-      ADMIN_API_KEY: admin-dev-key
     depends_on:
       db:
         condition: service_healthy

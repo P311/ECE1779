@@ -13,7 +13,6 @@ const mockEventsRepo: jest.Mocked<EventsRepository> = {
 
 const mockSourcesRepo: jest.Mocked<SourcesRepository> = {
   createSource: jest.fn(),
-  getSourceByApiKey: jest.fn(),
   getSources: jest.fn(),
   getSourceById: jest.fn(),
 };

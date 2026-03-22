@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000/api/v1";
-const ADMIN_API_KEY = process.env.ADMIN_API_KEY || "admin-dev-key";
 
 async function main() {
   console.log("=== Create Source ===");
@@ -10,7 +9,6 @@ async function main() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${ADMIN_API_KEY}`,
     },
     body: JSON.stringify({
       name: `test-source-${Date.now()}`,
@@ -24,22 +22,17 @@ async function main() {
   }
 
   const sourceData = (await sourceRes.json()) as {
-    api_key: string;
     id: string;
     [key: string]: any;
   };
   console.log(sourceData);
 
-  const apiKey = sourceData.api_key;
   const sourceId = sourceData.id;
 
   console.log("\n=== GET /sources ===");
 
   const getSourcesRes = await fetch(`${BASE_URL}/sources`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${ADMIN_API_KEY}`,
-    },
   });
 
   if (!getSourcesRes.ok) {
@@ -60,17 +53,15 @@ async function main() {
     throw new Error("Created source was not found in GET /sources response");
   }
 
-  const sourceHeaders = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${apiKey}`,
-  };
-
   console.log("\n=== POST /events (single) ===");
 
   const eventRes = await fetch(`${BASE_URL}/events`, {
     method: "POST",
-    headers: sourceHeaders,
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
+      source_id: sourceId,
       event_type: "user.login",
       severity: "info",
       payload: { user: "alice", browser: "Chrome" },
@@ -98,8 +89,11 @@ async function main() {
 
   const batchRes = await fetch(`${BASE_URL}/events/batch`, {
     method: "POST",
-    headers: sourceHeaders,
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
+      source_id: sourceId,
       events: [
         {
           event_type: "cpu.high",
@@ -127,7 +121,6 @@ async function main() {
 
   const getRes = await fetch(`${BASE_URL}/events?page=1`, {
     method: "GET",
-    headers: { Authorization: `Bearer ${ADMIN_API_KEY}` },
   });
 
   if (!getRes.ok) {
@@ -147,7 +140,6 @@ async function main() {
 
   const deleteRes = await fetch(`${BASE_URL}/events/${createdEventId}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${ADMIN_API_KEY}` },
   });
 
   if (!deleteRes.ok && deleteRes.status !== 204) {
@@ -159,9 +151,7 @@ async function main() {
 
   console.log("\n=== Verify deletion ===");
 
-  const verifyRes = await fetch(`${BASE_URL}/events?id=${createdEventId}`, {
-    headers: { Authorization: `Bearer ${ADMIN_API_KEY}` },
-  });
+  const verifyRes = await fetch(`${BASE_URL}/events?id=${createdEventId}`);
 
   if (!verifyRes.ok) {
     const body = await verifyRes.text();
