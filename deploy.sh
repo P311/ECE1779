@@ -23,8 +23,8 @@ docker build --platform linux/amd64 -t ghcr.io/saosnsa/ece1779-backend:latest ./
 docker push ghcr.io/saosnsa/ece1779-backend:latest
 
 echo "Applying k8s manifests..."
-kubectl apply -f k8s/01-postgres-statefulset.yaml
-kubectl apply -f k8s/02-postgres-service.yaml
+kubectl apply -f k8s/01-postgres-service.yaml
+kubectl apply -f k8s/02-postgres-statefulset.yaml
 kubectl apply -f k8s/03-backend-deployment.yaml
 kubectl apply -f k8s/04-backend-hpa.yaml
 kubectl apply -f k8s/05-backend-service.yaml
@@ -33,9 +33,9 @@ echo "Waiting for postgres to be ready..."
 kubectl wait --for=condition=ready pod/postgres-0 --timeout=120s
 
 echo "Running migrations..."
-kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/001_create_sources.sql 2>/dev/null || true
-kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/002_create_events.sql 2>/dev/null || true
-kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/003_create_alert.sql 2>/dev/null || true
+kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/001_create_sources.sql || true
+kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/002_create_events.sql || true
+kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/003_create_alert.sql || true
 
 echo "Restarting backend to pull latest image..."
 kubectl rollout restart deployment/backend

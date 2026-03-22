@@ -1,5 +1,7 @@
 # ECE1779
 
+# Note: if IP changes, run `kubectl get svc backend-svc` to get the current IP
+
 Backend API: http://159.203.49.172
 
 ### API Endpoints
