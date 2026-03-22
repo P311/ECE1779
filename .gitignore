@@ -10,3 +10,9 @@ frontend/node_modules/
 # OS
 .DS_Store
 sendgrid.env
+
+
+# k8s secrets
+k8s/00-secret.yaml
+k8s/.env
+k8s/*-kubeconfig.yaml
