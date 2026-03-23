@@ -8,7 +8,8 @@
 #    export KUBECONFIG=~/Downloads/k8s-1-35-1-do-0-tor1-1774148828091-kubeconfig.yaml
 #
 # 3. Create the secrets (only needed on first deploy or fresh cluster):
-#    kubectl apply -f k8s/00-secret.yaml
+#    kubectl apply -f k8s/00-postgres-secret.yaml
+#    kubectl apply -f k8s/00-backend-secret.yaml
 #    kubectl create secret docker-registry ghcr-secret \
 #      --docker-server=ghcr.io \
 #      --docker-username=saosnsa \
