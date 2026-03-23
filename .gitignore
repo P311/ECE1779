@@ -11,6 +11,7 @@ frontend/node_modules/
 .DS_Store
 
 # k8s secrets
-k8s/00-secret.yaml
+k8s/00-postgres-secret.yaml
+k8s/00-backend-secret.yaml
 k8s/.env
 k8s/*-kubeconfig.yaml
