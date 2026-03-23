@@ -10,7 +10,7 @@ import { makeEventsRouter } from "./routes/events";
 import { makeSourcesRouter } from "./routes/sources";
 import { makeAlertRouter } from "./routes/alert";
 import { makeStatsRouter } from "./routes/stats";
-import { makeEmailNotifier } from "./services/notifier";
+import { makeEmailNotifier } from "./services/email";
 
 const app = express();
 app.use(express.json());

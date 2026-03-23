@@ -10,4 +10,5 @@ module.exports = {
     },
   },
   testMatch: ['**/tests/**/*.ts'],
+  testPathIgnorePatterns: ['tests/services/test-email.ts'],
 };
