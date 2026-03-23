@@ -44,7 +44,7 @@ spec:
         name: postgres-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: do-block-storage # ← use "do-block-storage" for digital ocean k8s, "standard" for minikube
+        storageClassName: do-block-storage # use "do-block-storage" for digital ocean k8s, "standard" for minikube
         resources:
           requests:
             storage: 10Gi

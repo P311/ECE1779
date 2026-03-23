@@ -44,6 +44,11 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: admin-api-key
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: sendgrid-api-key
           resources:
             requests:
               cpu: "100m" # HPA needs this to calculate utilization
