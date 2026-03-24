@@ -11,9 +11,11 @@ import { makeSourcesRouter } from "./routes/sources";
 import { makeAlertRouter } from "./routes/alert";
 import { makeStatsRouter } from "./routes/stats";
 import { makeEmailNotifier } from "./services/email";
+import { makeHealthRouter } from "./routes/health";
 
 const app = express();
 app.use(express.json());
+app.use("/health", makeHealthRouter());
 
 app.get("/", (_req, res) => res.send("OK"));
 
