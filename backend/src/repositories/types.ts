@@ -7,6 +7,21 @@ export interface Source {
   is_active: boolean;
 }
 
+export interface SourceRow {
+  id: string;
+  name: string;
+  description: string | null;
+  key_prefix: string;
+  api_key_hash: string;
+  created_at: Date;
+  last_used_at: Date | null;
+  is_active: boolean;
+}
+
+export interface CreatedSource extends Source {
+  api_key: string;
+}
+
 export interface SourceWithStats extends Source {
   stats: {
     total_events: number;
@@ -92,13 +107,15 @@ export type EventsRepository = {
   countEventsWithinMinutes(minutes: number): Promise<number>;
   getEventStats(params: EventStatsParams): Promise<StatsBucket[]>;
   deleteEvent(id: string): Promise<boolean>;
+  getEventById(id: string): Promise<Event | null>;
 };
 
 export type SourcesRepository = {
   createSource(
     name: string,
     description?: string | null,
-  ): Promise<Source>;
+  ): Promise<CreatedSource>;
+  getSourceByApiKey(key: string): Promise<Source | null>;
   getSources(): Promise<SourceWithStats[]>;
   getSourceById(id: string): Promise<Source | null>;
 };

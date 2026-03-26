@@ -5,10 +5,12 @@ import {
   postEventSchema,
   getEventsQuerySchema,
 } from "./middleware/validation";
+import { makeEventWriteAuth, makeEventDeleteAuth } from "./middleware/auth";
 import { z } from "zod";
 import type {
   EventsRepository,
   AlertRepository,
+  SourcesRepository,
   BatchEventInput,
   EventFilters,
   PaginationParams,
@@ -16,6 +18,7 @@ import type {
 
 export function makeEventsRouter(
   eventsRepo: EventsRepository,
+  sourcesRepo: SourcesRepository,
   alertRepo?: AlertRepository,
   notifier?: {
     send: (to: string, subject: string, text: string) => Promise<void>;
@@ -28,9 +31,13 @@ export function makeEventsRouter(
     events: z.array(postEventSchema.omit({ source_id: true })).max(100),
   });
 
+  const eventWriteAuth = makeEventWriteAuth(sourcesRepo);
+  const eventDeleteAuth = makeEventDeleteAuth(sourcesRepo, eventsRepo);
+
   // POST /events - ingest single event
   router.post(
     "/",
+    eventWriteAuth,
     validateBody(postEventSchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
@@ -79,6 +86,7 @@ export function makeEventsRouter(
   // POST /events/batch - ingest up to 100 events
   router.post(
     "/batch",
+    eventWriteAuth,
     validateBody(postBatchSchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
@@ -178,6 +186,7 @@ export function makeEventsRouter(
   // DELETE /events/:id - permanently remove an event by id
   router.delete(
     "/:id",
+    eventDeleteAuth,
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { id } = req.params;

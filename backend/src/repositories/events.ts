@@ -192,6 +192,15 @@ export async function deleteEvent(id: string): Promise<boolean> {
   return (result.rowCount ?? 0) > 0;
 }
 
+export async function getEventById(id: string): Promise<Event | null> {
+  const pool = getPool();
+  const { rows } = await pool.query<Event>(
+    `SELECT * FROM events WHERE id = $1 LIMIT 1`,
+    [id],
+  );
+  return rows[0] ?? null;
+}
+
 export const eventsRepository: EventsRepository = {
   insertEvent,
   insertEventsBatch,
@@ -199,4 +208,5 @@ export const eventsRepository: EventsRepository = {
   countEventsWithinMinutes,
   getEventStats,
   deleteEvent,
+  getEventById,
 };

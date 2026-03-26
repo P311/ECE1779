@@ -25,7 +25,7 @@ const notifier = makeEmailNotifier();
 
 app.use(
   "/api/v1/events",
-  makeEventsRouter(eventsRepository, alertRepo, notifier),
+  makeEventsRouter(eventsRepository, sourcesRepository, alertRepo, notifier),
 );
 
 app.use("/api/v1/sources", makeSourcesRouter(sourcesRepository));
