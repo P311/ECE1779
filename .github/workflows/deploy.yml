@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/saosnsa/ece1779-backend:latest
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Configure kubectl
+        run: doctl kubernetes cluster kubeconfig save k8s-1-35-1-do-0-tor1-1774148828091
+
+      - name: Apply k8s manifests
+        run: |
+          kubectl apply -f k8s/01-postgres-service.yaml
+          kubectl apply -f k8s/02-postgres-statefulset.yaml
+          kubectl apply -f k8s/03-backend-deployment.yaml
+          kubectl apply -f k8s/04-backend-hpa.yaml
+          kubectl apply -f k8s/05-backend-service.yaml
+
+      - name: Wait for postgres
+        run: kubectl wait --for=condition=ready pod/postgres-0 --timeout=120s
+
+      - name: Run migrations
+        run: |
+          kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/001_create_sources.sql || true
+          kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/002_create_events.sql || true
+          kubectl exec -i postgres-0 -- psql -U pguser -d eventsdb < backend/db/migrations/003_create_alert.sql || true
+
+      - name: Restart backend
+        run: kubectl rollout restart deployment/backend
+
+      - name: Wait for backend
+        run: kubectl wait --for=condition=ready pod -l app=backend --timeout=120s
