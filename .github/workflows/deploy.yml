@@ -43,6 +43,7 @@ jobs:
           kubectl apply -f k8s/03-backend-deployment.yaml
           kubectl apply -f k8s/04-backend-hpa.yaml
           kubectl apply -f k8s/05-backend-service.yaml
+          kubectl apply -f k8s/06-db-backup-cronjob.yaml
 
       - name: Wait for postgres
         run: kubectl wait --for=condition=ready pod/postgres-0 --timeout=120s

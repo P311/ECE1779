@@ -16,6 +16,10 @@
 #      --docker-password=YOUR_GITHUB_TOKEN
 # 4. Add metrics
 #    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+# 5. Create the Spaces backup secret (only needed on first deploy or fresh cluster):
+#    kubectl create secret generic spaces-backup-secret \
+#      --from-literal=ACCESS_KEY=YOUR_SPACES_ACCESS_KEY \
+#      --from-literal=SECRET_KEY=YOUR_SPACES_SECRET_KEY
 
 set -e  # stop if any command fails
 
@@ -29,6 +33,7 @@ kubectl apply -f k8s/02-postgres-statefulset.yaml
 kubectl apply -f k8s/03-backend-deployment.yaml
 kubectl apply -f k8s/04-backend-hpa.yaml
 kubectl apply -f k8s/05-backend-service.yaml
+kubectl apply -f k8s/06-db-backup-cronjob.yaml
 
 echo "Waiting for postgres to be ready..."
 kubectl wait --for=condition=ready pod/postgres-0 --timeout=120s
