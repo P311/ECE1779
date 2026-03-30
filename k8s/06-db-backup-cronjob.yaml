@@ -4,6 +4,8 @@ metadata:
   name: postgres-backup
 spec:
   schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 1800
   jobTemplate:
     spec:
       template:
@@ -33,20 +35,35 @@ spec:
                 - -c
                 - |
                   TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-                  FILENAME="backup_${TIMESTAMP}.sql.gz"
-
-                  echo "Dumping database..."
-                  pg_dump -h postgres-svc -U pguser eventsdb | gzip > /tmp/${FILENAME}
+                  SQL_FILE="backup_${TIMESTAMP}.sql"
+                  FILENAME="${SQL_FILE}.gz"
 
                   echo "Installing s3cmd..."
                   apk add --no-cache s3cmd
+
+                  echo "Dumping database..."
+                  pg_dump -h postgres-svc -U pguser eventsdb -f /tmp/${SQL_FILE}
+                  if [ $? -ne 0 ]; then
+                    echo "pg_dump failed, aborting backup."
+                    exit 1
+                  fi
+
+                  echo "Compressing dump..."
+                  gzip /tmp/${SQL_FILE}
+
+                  echo "Configuring s3cmd credentials..."
+                  mkdir -p /root
+                  cat > /root/.s3cfg <<EOF
+                  [default]
+                  access_key = ${AWS_ACCESS_KEY_ID}
+                  secret_key = ${AWS_SECRET_ACCESS_KEY}
+                  EOF
+                  chmod 600 /root/.s3cfg
 
                   echo "Uploading to DO Spaces..."
                   s3cmd put /tmp/${FILENAME} \
                     s3://ece1779-event-backups/postgres/${FILENAME} \
                     --host=tor1.digitaloceanspaces.com \
-                    --host-bucket="%(bucket)s.tor1.digitaloceanspaces.com" \
-                    --access_key=${AWS_ACCESS_KEY_ID} \
-                    --secret_key=${AWS_SECRET_ACCESS_KEY}
+                    --host-bucket="%(bucket)s.tor1.digitaloceanspaces.com"
 
                   echo "Backup complete: ${FILENAME}"

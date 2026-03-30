@@ -16,6 +16,10 @@
 #      --docker-password=YOUR_GITHUB_TOKEN
 # 4. Add metrics
 #    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+# 5. Create the Spaces backup secret (only needed on first deploy or fresh cluster):
+#    kubectl create secret generic spaces-backup-secret \
+#      --from-literal=ACCESS_KEY=YOUR_SPACES_ACCESS_KEY \
+#      --from-literal=SECRET_KEY=YOUR_SPACES_SECRET_KEY
 
 set -e  # stop if any command fails
 
