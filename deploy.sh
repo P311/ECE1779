@@ -29,6 +29,7 @@ kubectl apply -f k8s/02-postgres-statefulset.yaml
 kubectl apply -f k8s/03-backend-deployment.yaml
 kubectl apply -f k8s/04-backend-hpa.yaml
 kubectl apply -f k8s/05-backend-service.yaml
+kubectl apply -f k8s/06-db-backup-cronjob.yaml
 
 echo "Waiting for postgres to be ready..."
 kubectl wait --for=condition=ready pod/postgres-0 --timeout=120s

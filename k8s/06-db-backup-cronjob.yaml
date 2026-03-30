@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: postgres:16-alpine
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: password
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: spaces-backup-secret
+                      key: ACCESS_KEY
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: spaces-backup-secret
+                      key: SECRET_KEY
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  FILENAME="backup_${TIMESTAMP}.sql.gz"
+
+                  echo "Dumping database..."
+                  pg_dump -h postgres-svc -U pguser eventsdb | gzip > /tmp/${FILENAME}
+
+                  echo "Installing s3cmd..."
+                  apk add --no-cache s3cmd
+
+                  echo "Uploading to DO Spaces..."
+                  s3cmd put /tmp/${FILENAME} \
+                    s3://ece1779-event-backups/postgres/${FILENAME} \
+                    --host=tor1.digitaloceanspaces.com \
+                    --host-bucket="%(bucket)s.tor1.digitaloceanspaces.com" \
+                    --access_key=${AWS_ACCESS_KEY_ID} \
+                    --secret_key=${AWS_SECRET_ACCESS_KEY}
+
+                  echo "Backup complete: ${FILENAME}"
