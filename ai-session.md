@@ -32,13 +32,36 @@ Can TypeScript use types/interfaces for dependency injection like .NET does? I c
 
 ### AI Response (trimmed if long)
  
-You absolutely can use type and interface for dependency injection in TypeScript like .NET does. The solution is to separate concerns into three layers:
+AI: You absolutely can use type and interface for dependency injection in TypeScript like .NET does. The solution is to separate concerns into three layers:
 
-Types (interface/contract) - what you have ✓
-Implementations - the actual database logic
-Composition Root - where you inject dependencies
-Here's how to fix it:
-.... (Code examples on what can be done)
+    Types (interface/contract) - what you have ✓
+    Implementations - the actual database logic
+    Composition Root - where you inject dependencies
+    Here's how to fix it:
+    .... (Code examples on what can be done)
+
+Human: In this sense, application layer still has a hard dependency on the infrastructure, right?
+
+AI: You're absolutely right! I glossed over that. In my example, auth.ts still directly imports the concrete implementation, which is still tight coupling.
+
+    For true decoupling (like .NET's dependency injection), you have a few options:
+
+    Option 1: Constructor/Function Injection (Simplest)
+
+    Option 2: DI Container (More .NET-like)
+    Use a library like inversify, tsyringe, or awilix to manage the container automatically.
+    .... (More text to explain in detail)
+
+Human: Are dependency injection and DI container used concepts in TypeScript development? If not, maybe forget about it. If yes, which one is more common?
+AI: Dependency Injection (the pattern) is absolutely used in TypeScript.
+
+    DI Containers (the framework) are used, but much less common than in .NET.
+
+    Here's what's actually typical in TypeScript/Node.js:
+
+    Constructor/function injection (passing deps as parameters) - Very common, used everywhere
+    DI Containers (inversify, tsyringe, etc.) - Less common, mostly in larger enterprise apps
+    .... (More text to explain in detail)
 
 ### What Your Team Did With It
  
