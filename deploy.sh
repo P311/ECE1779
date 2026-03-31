@@ -5,15 +5,16 @@
 #    echo YOUR_GITHUB_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 #
 # 2. Export the kubeconfig (download from DigitalOcean control panel):
-#    export KUBECONFIG=~/Downloads/k8s-1-35-1-do-0-tor1-1774148828091-kubeconfig.yaml
+#    export KUBECONFIG=<pathtodirectory>/k8s-1-35-1-do-0-tor1-1774148828091-kubeconfig.yaml
 #
 # 3. Create the secrets (only needed on first deploy or fresh cluster):
 #    kubectl apply -f k8s/00-postgres-secret.yaml
 #    kubectl apply -f k8s/00-backend-secret.yaml
 #    kubectl create secret docker-registry ghcr-secret \
 #      --docker-server=ghcr.io \
-#      --docker-username=saosnsa \
+#      --docker-username=YOUR_GITHUB_USERNAME \
 #      --docker-password=YOUR_GITHUB_TOKEN
+#    Note: GitHub token must have read:packages scope to pull images
 # 4. Add metrics
 #    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 # 5. Create the Spaces backup secret (only needed on first deploy or fresh cluster):
