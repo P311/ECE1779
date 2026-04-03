@@ -90,7 +90,10 @@ export function makeEventsRouter(
     validateBody(postBatchSchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
-        const { source_id, events } = req.body as { source_id: string; events: BatchEventInput[] };
+        const { source_id, events } = req.body as {
+          source_id: string;
+          events: BatchEventInput[];
+        };
         const inserted = await eventsRepo.insertEventsBatch(source_id, events);
 
         if (alertRepo && notifier) {
@@ -131,6 +134,7 @@ export function makeEventsRouter(
           req as Request & {
             parsedQuery: {
               page: number;
+              limit: number;
               id?: string;
               source_id?: string;
               event_type?: string;
@@ -164,7 +168,7 @@ export function makeEventsRouter(
 
         const pagination: PaginationParams = {
           page: parsed.page,
-          limit: 15,
+          limit: parsed.limit,
         };
 
         const { data, total } = await eventsRepo.queryEvents(
