@@ -658,7 +658,7 @@ After prerequisites are set up, all future deployments are handled automatically
 
 **Frontend**
 
-Need to be filled out by Lau.
+To be filled out.
 
 ---
 
@@ -683,7 +683,7 @@ AI serves as a knowledge base and served as a design partner for API design. We 
 - SendGrid email integration
 - Backend interfaces and tests
 
-**Brendan Kan**
+**Ping-Ju Kan**
 
 - Backend database layer (PostgreSQL pool, repository pattern, migrations for events and sources table)
 - Backend API routes (events, sources)
