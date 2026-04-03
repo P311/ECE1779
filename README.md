@@ -74,31 +74,40 @@ DigitalOcean's built-in Kubernetes metrics and alerting dashboards monitor clust
 
 ### Feature Overview
 
-**Event Ingestion**
+#### **Event Ingestion**
+
 Each source registers with the system and receives an API key. They can then push events via the single event endpoint `POST /api/v1/events` or the batch event endpoint `POST /api/v1/events/batch` which takes up to 100 events at once. Each event carries a type, severity, and JSON payload. The auth middleware validates the source's API key before accepting the event. This fulfills the project objective of providing a resilient ingestion API that external sources can push data to.
 
-**Event Querying and Persistence**
+#### **Event Querying and Persistence**
+
 `GET /api/v1/events` supports filtering by source, type, severity, and time range. Events are persisted in PostgreSQL backed by a DigitalOcean block storage PVC, ensuring data survives pod restarts and redeployments. This directly satisfies the core requirement for stateful persistent storage using Kubernetes PersistentVolumeClaims.
 
-**Frontend Dashboard**
+#### **Frontend Dashboard**
+
 The frontend is a Next.js 14 application deployed on Fly.io at https://event-analytics-frontend.fly.dev/. It provides a web interface for viewing ingested events in a table, managing sources, and visualizing analytics through line charts and summary statistics. This satisfies the optional frontend requirement and makes the system accessible without needing to interact with the API directly.
 
-**Analytics and Visualization**
+#### **Analytics and Visualization**
+
 `GET /api/v1/stats/timeline` returns aggregated event counts grouped by minute, hour, day, or month. The frontend dashboard renders these as line charts using Recharts. Summary statistics are also available via other analytics endpoints such as `GET /api/v1/stats/source` and `GET /api/v1/stats/severity`. This fulfills the project objective of providing clear system insights through visualization.
 
-**Alert Configuration and Email Notifications**
+#### **Alert Configuration and Email Notifications**
+
 Users can configure an alert rule via `PUT /api/v1/alert/config` specifying a time window, event threshold, and notification email. When events exceed the threshold within the time window, SendGrid sends an email notification automatically. This satisfies the advanced feature requirements for both integration with an external service (SendGrid) and security enhancements (admin-authenticated alert configuration).
 
-**Source Management and Security**
+#### **Source Management and Security**
+
 Sources can be created, listed, and deleted via `GET/POST/DELETE /api/v1/sources`. Source API keys are stored as a hash in the database, along with a prefix used for indexing. The plain-text API key is returned only once upon creation. All event write and delete operations require Bearer token authentication. Sensitive credentials are managed via Kubernetes Secrets. This satisfies the advanced feature requirement for security enhancements.
 
-**Auto-scaling and High Availability**
+#### **Auto-scaling and High Availability**
+
 The backend runs with a minimum of 2 replicas managed by a Kubernetes HPA (2–5 replicas, scaling up when 60% CPU threshold is reached for at least 90 seconds, and 5 minutes before scaling back down). This satisfies the advanced feature requirement for auto-scaling and high availability, ensuring the system remains responsive under increased load.
 
-**Backup and Recovery**
+#### **Backup and Recovery**
+
 A Kubernetes CronJob runs daily at 03:00 UTC, dumping the full PostgreSQL database with `pg_dump`, compressing it with gzip, and uploading it to DigitalOcean Spaces. This satisfies the advanced feature requirement for backup and recovery.
 
-**Monitoring and Observability**
+#### **Monitoring and Observability**
+
 DigitalOcean's built-in Kubernetes metrics and alerting dashboards monitor cluster health, with alerts configured for CPU, memory, and disk usage exceeding 70%. This satisfies the core requirement for monitoring and observability using provider tools.
 
 ### API Endpoints
