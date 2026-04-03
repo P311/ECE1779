@@ -92,7 +92,7 @@ The frontend is a Next.js 14 application deployed on Fly.io at https://event-ana
 
 #### **Alert Configuration and Email Notifications**
 
-Users can configure an alert rule via `PUT /api/v1/alert/config` specifying a time window, event threshold, and notification email. When events exceed the threshold within the time window, SendGrid sends an email notification automatically. This satisfies the advanced feature requirements for both integration with an external service (SendGrid) and security enhancements (admin-authenticated alert configuration).
+Users can configure an alert rule via `PUT /api/v1/alert/config` specifying a time window, event threshold, and notification email. When events exceed the threshold within the time window, SendGrid sends an email notification automatically. This satisfies the advanced feature requirement for integration with an external service (SendGrid).
 
 #### **Source Management and Security**
 
@@ -597,7 +597,6 @@ Create `backend/.env`:
 
 ```env
 DATABASE_URL=postgres://dev:devpass@db:5432/eventdb
-ADMIN_API_KEY=admin-dev-key
 ```
 
 > **Note:** `SENDGRID_API_KEY` and `EMAIL_USER` are only configured in production via Kubernetes secrets. Email notifications are disabled in local development. Actual credentials have been sent to TA.
@@ -628,7 +627,7 @@ curl http://localhost:8000/health
 
 Expected response: `{"status":"ok","db":"connected"}`
 
-> **Note:** The frontend is not fully functional in local development due to CORS configuration. To use the frontend, access the production deployment at https://event-analytics-frontend.fly.dev/.
+> **Note:** The frontend may not be able to reach the backend in local development because the backend does not configure CORS headers. To use the frontend locally, either add a CORS middleware to the backend or access the production deployment at https://event-analytics-frontend.fly.dev/.
 
 ### Production Deployment
 
@@ -667,7 +666,20 @@ After prerequisites are set up, all future deployments are handled automatically
 
 **Frontend**
 
-To be filled out.
+The frontend is deployed on Fly.io in the Toronto (`yyz`) region. A Next.js API route (`src/app/api/[...path]/route.ts`) proxies all `/api/*` requests server-side to the backend, avoiding mixed-content (HTTPS→HTTP) browser errors. The backend URL is configured via the `BACKEND_URL` environment variable in `fly.toml`.
+
+Prerequisites:
+- Install the [Fly CLI](https://fly.io/docs/flyctl/install/)
+- Authenticate with `fly auth login`
+
+To deploy:
+
+```bash
+cd frontend
+fly deploy
+```
+
+This builds the Docker image using the multi-stage `Dockerfile`, pushes it to Fly.io, and starts the application on port 3000 with HTTPS enforced. The deployment configuration is defined in `frontend/fly.toml`.
 
 ---
 
