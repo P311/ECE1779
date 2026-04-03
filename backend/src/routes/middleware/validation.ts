@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
+import { Request, Response, NextFunction } from "express";
+import { z } from "zod";
 
 export const postEventSchema = z.object({
   source_id: z.uuid(),
   event_type: z.string().min(1).max(100),
-  severity: z.enum(['info', 'warning', 'critical']),
+  severity: z.enum(["info", "warning", "critical"]),
   payload: z.record(z.string(), z.unknown()).catch({}),
 });
 
@@ -15,6 +15,7 @@ export const postSourceSchema = z.object({
 
 export const getEventsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).default(15),
   id: z.string().optional(),
   source_id: z.string().optional(),
   event_type: z.string().optional(),
@@ -24,7 +25,7 @@ export const getEventsQuerySchema = z.object({
 });
 
 export const getStatsQuerySchema = z.object({
-  group_by: z.enum(['minute', 'hour', 'day', 'month']),
+  group_by: z.enum(["minute", "hour", "day", "month"]),
 });
 
 export const putAlertConfigSchema = z.object({
@@ -40,7 +41,7 @@ export function validateBody<T>(schema: z.ZodType<T>) {
     if (!result.success) {
       res.status(422).json({
         error: {
-          message: 'Validation failed',
+          message: "Validation failed",
           details: result.error,
         },
       });
@@ -57,7 +58,7 @@ export function validateQuery<T>(schema: z.ZodType<T>) {
     if (!result.success) {
       res.status(422).json({
         error: {
-          message: 'Validation failed',
+          message: "Validation failed",
           details: result.error,
         },
       });

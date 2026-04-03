@@ -15,7 +15,7 @@ export function generateApiKey(): {
   apiKeyHash: string;
 } {
   const keyPrefix = crypto.randomBytes(4).toString("hex"); // 8 chars
-  const secret = crypto.randomBytes(24).toString("hex");  // 48 chars
+  const secret = crypto.randomBytes(24).toString("hex"); // 48 chars
   const apiKey = `evt_${keyPrefix}_${secret}`;
   const apiKeyHash = crypto.createHash("sha256").update(apiKey).digest("hex");
   return { apiKey, keyPrefix, apiKeyHash };
