@@ -1,28 +1,23 @@
 ## AI assisted design document creation
  
 ### Prompt (you sent to AI)
- 
-Create a design document of REST APIs for an event logging platform with four resource groups:
 
-Sources — registered sources that can produce events. GET /sources, POST /sources.
-Events — get, produce, and delete events, events should have reference source by Id and should have a severity property. GET /events, POST /events, DELETE /events/{id}.
-Stats — get the stats of events: GET /stats.
-Alert — An endpoint for configuring alerts, can toggle on/off, has a time window and a threshold config. PUT /alert/config
+Create a design document of REST APIs for an event logging platform with four resource groups. For each route remember to specify the meaning of parameters, request body, and all possible response codes and bodies.
+
+Sources — registered sources that can produce events. GET /sources, POST /sources. For sources you do not need pagination, return all sources when handling a GET request.
+Events — get, produce, and delete events, events should have reference source by Id and should have a severity property. GET /events, POST /events, DELETE /events/{id}. For events, pagination is needed. Each page has at most 15 events, and most recent events are returned first. Besides, we want to support filtering events by any event field. For example `/events?payload=Chrome` matches the most recent event whose serialized payload contains `"Chrome"` as a substring. Same for id, severity and so on.
+Stats — get the stats of events: GET /stats/timeline returns events timeline, returns a list of counts that represents the number of event in each minute/hour/day/month, decided by request parameter. GET /stats/source returns a list of counts that represents the number of event for each source. GET /stats/severity returns a list of counts that represents the number of event for each severity. 
+Alert — An endpoint for configuring alerts, can toggle on/off, has a time window and a threshold config. PUT /alert/config overwrites the whole config, all fields are required in the request body.
 
 ### AI Response (trimmed if long)
  
-Refer to REST-API.md to see what AI created.
+Refer to REST-API.md to see what AI created. Some parts are also modified by ourselves during reviewing and development process (e.g, response body format).
 
 ### What Your Team Did With It
- 
-1-3 bullet points describing:
- 
-- What was useful
-AI created a scaffolding of documentation that's close to 80%-90% complete. It's almost exactly what we wanted.
-- What was incorrect, misleading, or not applicable to your project
-We had to fill in some details regarding error scenarios, and when it comes to actual implementation, we needed to create the authentication and authorization flow ourselves which the AI misses when it comes to the design.
-- How your team verified, modified, or replaced the suggestion
-We had a working session to go over the document generated, and examine the document one line at a time to see whether the behaviour is what we wanted and whether we want any of the query parameter or post/put bodies.
+
+- What was useful: AI created a scaffolding of documentation that's close to 80%-90% complete. It's almost exactly what we wanted.
+- What was incorrect, misleading, or not applicable to your project: We had to fill in some details regarding error scenarios, and when it comes to actual implementation, we needed to create the authentication and authorization flow ourselves which the AI misses when it comes to the design.
+- How your team verified, modified, or replaced the suggestion: We had a working session to go over the document generated and see whether the behaviour is what we wanted and whether we want any of the query parameter or post/put bodies. When we finish the implementation, we tested each endpoint against the design using Postman.
 
 ## AI assisted work breakdown
  
@@ -64,12 +59,7 @@ AI: Dependency Injection (the pattern) is absolutely used in TypeScript.
     .... (More text to explain in detail)
 
 ### What Your Team Did With It
- 
-1-3 bullet points describing:
- 
-- What was useful
-AI suggested a practical solution to creating and using types in typescript to enable dependency injection. This allowed our division of labor to execute without blocking one another. We defined the contracts (types) early on and allowed for independent development of the infrastructure layer and the application layer, so as to borrow the terminologies of clean architecture. 
-- What was incorrect, misleading, or not applicable to your project
-It actually did not offer a right solution upfront. We inspected the solution and realized that the solution offered makes it such that the application layer still depends on infrastructure. It wasn't until further probing we settled on a solution of resolving dependencies during application start up and use a factory pattern for implementing application layer functions.
-- How your team verified, modified, or replaced the suggestion
-We verified the validity of the suggestion through manual inspection and running the code and see that it works.
+
+- What was useful: AI suggested a practical solution to creating and using types in TypeScript to enable dependency injection. This allowed our division of labor to execute without blocking one another. We defined the contracts (types) early on and allowed for independent development of the infrastructure layer and the application layer, borrowing the terminologies of clean architecture.
+- What was incorrect, misleading, or not applicable to your project: It did not offer a correct solution upfront. We inspected the solution and realized that the solution offered made it such that the application layer still depends on infrastructure. It wasn't until further probing that we settled on a solution of resolving dependencies during application startup and using a factory pattern for implementing application layer functions.
+- How your team verified, modified, or replaced the suggestion: We verified the validity of the suggestion through manual inspection and running the code.
