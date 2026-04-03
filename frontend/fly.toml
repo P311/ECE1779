@@ -9,6 +9,9 @@ primary_region = 'yyz'
 [build]
   dockerfile = './Dockerfile'
 
+[env]
+  BACKEND_URL = "http://159.203.49.172"
+
 [http_service]
   internal_port = 3000
   force_https = true
