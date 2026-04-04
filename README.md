@@ -735,3 +735,6 @@ AI serves as a knowledge base and served as a design partner for API design. We 
 **AI tools accelerate but don't replace understanding.** AI was useful for scaffolding configuration and suggesting approaches, but several suggestions required correction — particularly around authentication and permissions. Verifying every AI-generated config against actual cluster behaviour was essential.
 
 Overall, this project gave us hands-on experience with the full lifecycle of a cloud-native application — from local Docker Compose development to a production Kubernetes deployment with auto-scaling, monitoring, CI/CD, and automated backups.
+
+## Video Demo
+[ECE1779 Project demo](https://drive.google.com/file/d/1vz5G-8G0YAMfA0F6CM0yVtOjT9SRuuWc/view?usp=sharing)
